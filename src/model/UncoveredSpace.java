@@ -1,10 +1,14 @@
 package model;
 
-public class UncoveredSpace extends Space {
+public class UncoveredSpace {
 
-	public UncoveredSpace(final Integer theNumber, final String theLotName, 
-			final String theSpaceType) {
-		
-		super(theNumber, theLotName, theSpaceType);
+	private final Integer mySpaceNumber;
+	
+	public UncoveredSpace(final Integer theNumber) {
+		mySpaceNumber = theNumber;
+	}
+	
+	public Integer getSpaceNumber() {
+		return mySpaceNumber;
 	}
 }

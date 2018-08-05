@@ -5,7 +5,7 @@ import java.util.List;
 import control.ParkingDb;
 import model.Lot;
 
-public class ParkingApplication {
+public class ParkingTestGUI {
 
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
@@ -16,10 +16,10 @@ public class ParkingApplication {
 			System.out.println(e.getName());
 		
 		
-		// List<Lot> west = ParkingDb.getLots("South Tower");
+		List<Lot> west = ParkingDb.getLots("South Tower");
 		
-//		for (Lot e : west)
-//			System.out.println(e.getName());
+		for (Lot e : west)
+			System.out.println(e.getName());
 		
 		
 	}

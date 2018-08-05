@@ -1,17 +1,21 @@
 package model;
 
-public class CoveredSpace extends Space {
+public class CoveredSpace {
 
-	private final Integer myRate;
+	private final Integer mySpaceNumber;
 	
-	public CoveredSpace(final Integer theNumber, final String theLotName, 
-		final String theSpaceType, final Integer theRate) {
-		
-		super(theNumber, theLotName, theSpaceType);
+	private final Double myRate;
+	
+	public CoveredSpace(final Integer theNumber, final Double theRate) {
+		mySpaceNumber = theNumber;
 		myRate = theRate;
 	}
 
-	public Integer getRate() {
+	public Integer getSpaceNumber() {
+		return mySpaceNumber;
+	}
+	
+	public Double getRate() {
 		return myRate;
 	}
 		
