@@ -22,19 +22,37 @@ public final class ParkingDb {
 	private static Connection db; 
 	
 	/*
-	 * Query methods execute an sql statement and then send the row results to
-	 * the appropriate factory method where a List of objects is returned.
-	 * 
+	 * A query method contains an SQL statement that is structured to return
+	 * all attributes for a certain model class. The row results are passed
+	 * to a factory class for the specified model, and the resulting list of
+	 * objects is returned to the caller.
 	 */
 		
 	public static List<Lot> getLots(String theLotName) {
 		String sql = "SELECT * FROM ParkingLot WHERE lotName = ?";
-		return processRowsToLots(executeQuery(sql, theLotName));
+		String args[] = {theLotName};
+		return processRowsToLots(executeQuery(sql, args));
 	}
 	
 	public static List<Lot> getAllLots() {
 		String sql = "SELECT * FROM ParkingLot";
 		return processRowsToLots(executeQuery(sql));
+	}
+	
+//	public static List<Staff> getStaff(String theStaffName) {
+//		String sql = "SELECT * FROM Staff WHERE staffName = ?";
+//		String args[] = {theStaffName};
+//		return processRowsToStaff(executeQuery(sql, args));
+//	}
+	
+	public static List<Space> getAllSpaces() {
+		String sql = "SELECT * FROM Space";
+		return processRowsToSpaces(executeQuery(sql));
+	}
+	
+	public static List<Staff> getAllStaff() {
+		String sql = "SELECT * FROM Staff";
+		return processRowsToStaff(executeQuery(sql));
 	}
 
 	
@@ -190,11 +208,12 @@ public final class ParkingDb {
 		Statement query;
 		
 		try {
-			if (db == null)
+			if (db == null || db.isClosed());
 				createConnection();
 			
 			query = db.createStatement();
 			result = query.executeQuery(theSql);
+			db.close();
 		} catch(SQLException e) {
 			System.err.println(e.getMessage());
 		}
@@ -202,17 +221,22 @@ public final class ParkingDb {
 		return result;
 	}
 	
-	private static ResultSet executeQuery(final String theSql, final String theArg) {
+	private static ResultSet executeQuery(final String theSql, final String[] theArgs) {
 		ResultSet result = null;
 		PreparedStatement query;
 		
 		try {
-			if (db == null)
+			if (db == null || db.isClosed())
 				createConnection();
 			
 			query = db.prepareStatement(theSql);
-			query.setString(1, theArg);
+			
+			for (int i = 0; i < theArgs.length; i++) {
+				query.setString(i+1, theArgs[i]);	
+			}
 			result = query.executeQuery();
+			
+			db.close();
 		} catch(SQLException e) {
 			System.err.println(e.getMessage());
 		}
