@@ -24,7 +24,7 @@ public class SpaceBooking {
 	public SpaceBooking(final Integer theStaffNumber, final Integer theSpaceNumber,
 			final LocalDate theDate, final String theVisitorLicense) {
 		
-		this(0, theStaffNumber, theSpaceNumber, theDate, theVisitorLicense);
+		this(-1, theStaffNumber, theSpaceNumber, theDate, theVisitorLicense);
 	}
 	
 	// public getters
@@ -40,8 +40,8 @@ public class SpaceBooking {
 		return mySpaceNumber;
 	}
 	
-	public String getDate() {
-		return myDate.toString();
+	public LocalDate getDate() {
+		return myDate;
 	}
 	
 	public String getVisitorLicense() {

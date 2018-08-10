@@ -5,16 +5,16 @@ public class Space {
 	// Instance variables
 	private final Integer myNumber;
 	private final String myLotName;
-	private final String mySpaceType;
+	private final SpaceType mySpaceType;
 		
 	// Constructor
-	public Space(final Integer theNumber, final String theLotName, final String theSpaceType) {
+	public Space(final Integer theNumber, final String theLotName, final SpaceType theSpaceType) {
 		myNumber = theNumber;
 		mySpaceType = theSpaceType;
 		myLotName = theLotName;
 	}
 	
-	public Space(final String theLotName, final String theSpaceType) {
+	public Space(final String theLotName, final SpaceType theSpaceType) {
 		this(0, theLotName, theSpaceType);
 	}
 		
@@ -27,9 +27,23 @@ public class Space {
 		return myLotName;
 	}
 
-	public String getSpaceType() {
+	public SpaceType getSpaceType() {
 		return mySpaceType;
 	}
 
+	@Override
+	public boolean equals(Object theOther) {
+		boolean result = false;
+		
+		if (theOther != null && theOther instanceof Space
+				&& this.getNumber() > 0) {
+			
+			Space oth = (Space) theOther;
+			result = this.getNumber().equals(oth.getNumber());
+		}
+		
+		return result;
+	}
+	
 }
 	

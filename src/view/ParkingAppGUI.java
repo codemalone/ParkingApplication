@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -22,6 +23,7 @@ import control.SpaceAllocator;
 import model.Space;
 import model.SpaceBooking;
 import model.Staff;
+import model.StaffSpace;
 
 public class ParkingAppGUI extends JFrame implements ActionListener {
 	
@@ -102,7 +104,7 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		}
 		staffListField = new JComboBox<>(staffNames);
 		
-		visitorLicenseField = new JTextField(25);
+		visitorLicenseField = new JTextField(15);
 		
 		// set navigation button actions
 		MenuScreen screen = new MenuScreen("Visitor Booking");
@@ -163,31 +165,82 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	}
 	
 	
+	/**
+	 * The booking request screen.
+	 */
+	private void showAdminAssignStaffSpaceScreen() {
+		JComboBox<String> staffListField; 	//user selects their name
+		
+		/* Initialize a list of Staff objects index aligned with staffListField */
+		List<Staff> allStaff = ParkingQuery.getAllStaffWithoutAssignedSpaces();
+		
+		/* Populate staffListField */
+		final String[] staffNames = new String[allStaff.size()];
+      
+		for (int i = 0; i < allStaff.size(); i++) {
+			staffNames[i] = allStaff.get(i).getName();
+		}
+		staffListField = new JComboBox<>(staffNames);
+		
+		// set navigation button actions
+		MenuScreen screen = new MenuScreen("StaffSpace Assignment");
+		screen.setBackAction(e -> showAdminScreen());
+		screen.setSubmitAction(e -> {
+			final int staffListIndex = staffListField.getSelectedIndex();
+			final Integer staffNumber = allStaff.get(staffListIndex).getNumber();
+			final Integer spaceNumber;
+			
+			// get lot/space from table selection
+			final int row = mySpaceTable.getSelectedRow();
+			spaceNumber = (Integer) mySpaceData[row][1];
+			
+			// send SpaceBooking and then redirect user to admin screen
+			StaffSpace assignment = new StaffSpace(staffNumber, spaceNumber);
+			SpaceAllocator.requestAddStaffSpace(assignment);
+			showAdminScreen();
+		});
+		
+		// menu panel contents
+		JPanel mainPanel = new JPanel(new FlowLayout());
+		
+		JPanel empPanel = new JPanel();
+		empPanel.add(new JLabel("Staff Member Name:"));
+		empPanel.add(staffListField);
+		mainPanel.add(empPanel);
+		
+		// table
+		myTablePanel.removeAll();
+		List<Space> spaces = SpaceAllocator.getAvailableStaffSpaces();
+		setSpaceData(spaces);
+		mySpaceTable = new JTable(mySpaceData, SPACE_TABLE_COLUMN_NAMES);
+		JScrollPane scrollPane = new JScrollPane(mySpaceTable);
+		myTablePanel.add(scrollPane);
+			
+		mainPanel.add(myTablePanel);
+		screen.setMainPanel(mainPanel);
+		setDisplay(screen);
+	}
+	
+	
 	
 	private void showAdminScreen() {
 		MenuScreen screen = new MenuScreen("Parking Administration");
 		screen.setBackAction(e -> showWelcomeScreen());
 		
-		//menu panel contents
+		// menu panel contents
 		JPanel panel = new JPanel();
 		
+		JPanel buttons = new JPanel(new GridLayout(2,1));
+		JButton assignStaffSpaceButton = new JButton("Assign Staff Space");
+		assignStaffSpaceButton
+			.addActionListener(e -> showAdminAssignStaffSpaceScreen());
+		buttons.add(assignStaffSpaceButton);
 		
+		panel.add(buttons);		
 		screen.setMainPanel(panel);
 		setDisplay(screen);
 	}
-		
-	
-	// get all available spaces and put lotName and spaceNumber into a 2D-array
-	private Object[][] getSpaceTableData(LocalDate theDate) {
-		List<Space> spaces = SpaceAllocator.getAvailableVisitorSpaces(theDate);
-		Object[][] result = new Object[spaces.size()][2];
-			
-		for (int i = 0; i < spaces.size(); i++) {
-			result[i][0] = spaces.get(i).getLotName();
-			result[i][1] = spaces.get(i).getNumber();
-		}
-		return result;
-	}
+
 		
 	// attempt to parse a date from theField otherwise return null
 	// date format mm/dd/yyyy
@@ -206,10 +259,20 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		return result; 
 	}
 	
+	// get all available spaces and put lotName and spaceNumber into a 2D-array
+	private void setSpaceData(final List<Space> theList) {
+		mySpaceData = new Object[theList.size()][2];
+			
+		for (int i = 0; i < theList.size(); i++) {
+			mySpaceData[i][0] = theList.get(i).getLotName();
+			mySpaceData[i][1] = theList.get(i).getNumber();
+		}
+	}
+	
 	private void clearSpaceTable() {
 		myTablePanel.removeAll();
+		setSpaceData(new ArrayList<Space>());
 		
-		mySpaceData = new Object[1][2];
 		mySpaceTable = new JTable(mySpaceData, SPACE_TABLE_COLUMN_NAMES);
 		JScrollPane scrollPane = new JScrollPane(mySpaceTable);
 		myTablePanel.add(scrollPane);
@@ -237,7 +300,8 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 			myTablePanel.removeAll();
 			
 			if (date != null) {
-				mySpaceData = getSpaceTableData(date);
+				List<Space> spaces = SpaceAllocator.getAvailableVisitorSpaces(date);
+				setSpaceData(spaces);
 				mySpaceTable = new JTable(mySpaceData, SPACE_TABLE_COLUMN_NAMES);
 				JScrollPane scrollPane = new JScrollPane(mySpaceTable);
 				myTablePanel.add(scrollPane);

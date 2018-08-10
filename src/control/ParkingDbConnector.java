@@ -34,7 +34,7 @@ public class ParkingDbConnector {
 			
 			query = db.createStatement();
 			result = query.executeQuery(theSql);
-			db.close();
+
 		} catch(SQLException e) {
 			System.err.println(e.getMessage());
 		}
@@ -57,7 +57,22 @@ public class ParkingDbConnector {
 			}
 			result = query.executeQuery();
 			
-			db.close();
+		} catch(SQLException e) {
+			System.err.println(e.getMessage());
+		}
+		
+		return result;
+	}
+	
+	protected final static PreparedStatement getPreparedStatement(final String theSql) {
+		PreparedStatement result = null;
+		
+		try {
+			if (db == null || db.isClosed())
+				create();
+			
+			result = db.prepareStatement(theSql);
+			
 		} catch(SQLException e) {
 			System.err.println(e.getMessage());
 		}

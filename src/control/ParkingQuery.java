@@ -1,19 +1,15 @@
 package control;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-
 import model.CoveredSpace;
 import model.Lot;
 import model.Space;
 import model.SpaceBooking;
+import model.SpaceType;
 import model.Staff;
 import model.StaffSpace;
 import model.UncoveredSpace;
@@ -30,32 +26,61 @@ public final class ParkingQuery {
 	public final static List<Lot> getLots(final String theLotName) {
 		final String sql = "SELECT * FROM ParkingLot WHERE lotName = ?";
 		final String args[] = {theLotName};
-		final ResultSet rows = ParkingDbConnector.executeQuery(sql, args); 
-		return processRowsToLots(rows);
+		return processRowsToLots(query(sql, args));
 	}
 	
 	public final static List<Lot> getAllLots() {
 		final String sql = "SELECT * FROM ParkingLot";
-		final ResultSet rows = ParkingDbConnector.executeQuery(sql);
-		return processRowsToLots(rows);
+		return processRowsToLots(query(sql));
 	}
 	
-	public final static List<Space> getAllSpaces() {
-		final String sql = "SELECT * FROM Space";
-		final ResultSet rows = ParkingDbConnector.executeQuery(sql);
-		return processRowsToSpaces(rows);
+	public final static List<Space> getSpaces(Integer theSpaceNumber) {
+		final String sql = "SELECT * FROM Space WHERE spaceNumber = ?";
+		final String args[] = {theSpaceNumber.toString()};
+		return processRowsToSpaces(query(sql, args));
+	}
+		
+	public final static List<Space> getAllCoveredSpaces() {
+		final String sql = "SELECT * FROM CoveredSpace";
+		return processRowsToSpaces(query(sql));
 	}
 	
+	public final static List<Space> getAllSpacesOfType(SpaceType theSpaceType) {
+		final String sql = "SELECT * FROM Space WHERE spaceType = ?";
+		final String args[] = {theSpaceType.toString()};
+		return processRowsToSpaces(query(sql, args));
+	}
+	
+	public final static List<Space> getAllAssignedSpaces() {
+		final String sql = "SELECT * FROM Space NATURAL JOIN StaffSpace";
+		return processRowsToSpaces(query(sql));
+	}
+	
+	public final static List<Space> getAllBookedSpaces(LocalDate theDate) {
+		final String sql = "SELECT Space.* " +
+						   	"FROM Space NATURAL JOIN SpaceBooking " +
+						   	"WHERE dateOfVisit = ?";
+		final String args[] = {getSQLDate(theDate)};
+		return processRowsToSpaces(query(sql, args));
+	}
+		
 	public final static List<Staff> getAllStaff() {
 		final String sql = "SELECT * FROM Staff";
-		final ResultSet rows = ParkingDbConnector.executeQuery(sql);
-		return processRowsToStaff(rows);
+		return processRowsToStaff(query(sql));
 	}
 	
-	/*
-	 * Helper methods to process results and return a list of objects.
-	 */
+	public final static List<Staff> getAllStaffWithoutAssignedSpaces() {
+		final String sql = "SELECT Staff.* FROM Staff LEFT OUTER JOIN StaffSpace "
+				+ "ON Staff.staffNumber = StaffSpace.staffNumber "
+				+ "WHERE StaffSpace.staffNumber IS NULL";
+		return processRowsToStaff(query(sql));
+	}
 	
+	
+	/*
+	 * Helper methods to process queries and package results
+	 * into a list of objects.
+	 */
 	/**
 	 * Processes rows and returns a list of Lot objects. 
 	 * @param theRows a resultset containing Lot data.
@@ -88,7 +113,7 @@ public final class ParkingQuery {
 			while (theRows.next()) {
 				Integer spaceNumber = theRows.getInt("spaceNumber");
 				String lotName = theRows.getString("lotName");
-				String spaceType = theRows.getString("spaceType");
+				SpaceType spaceType = SpaceType.valueOf(theRows.getString("spaceType"));
 				
 				result.add(new Space(spaceNumber, lotName, spaceType));
 			}
@@ -194,15 +219,33 @@ public final class ParkingQuery {
 	}
 		
 	/**
-	 * TO-DO: Converts a SQL date string to a LocalDate.
+	 * Converts a SQL date string to a LocalDate.
 	 * @param theDateString
 	 * @return
 	 */
 	private static LocalDate getLocalDate(final String theDateString) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 		LocalDate result = LocalDate.parse(theDateString, formatter);
-		
 		return result;
+	}
+	
+	/**
+	 * Converts a LocalDate to a SQL date string.
+	 * @param theLocalDate
+	 * @return
+	 */
+	private static String getSQLDate(final LocalDate theLocalDate) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		String result = theLocalDate.format(formatter);
+		return result;
+	}
+		
+	private static ResultSet query(final String theSql) {
+		return ParkingDbConnector.executeQuery(theSql);
+	}
+	
+	private static ResultSet query(final String theSql, final String[] theArgs) {
+		return ParkingDbConnector.executeQuery(theSql, theArgs);
 	}
 		
 }
