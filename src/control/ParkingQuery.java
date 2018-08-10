@@ -6,14 +6,10 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import model.CoveredSpace;
 import model.Lot;
 import model.Space;
-import model.SpaceBooking;
 import model.SpaceType;
 import model.Staff;
-import model.StaffSpace;
-import model.UncoveredSpace;
 
 /**
  * This class provides queries that return a list of the expected object type.
@@ -35,19 +31,25 @@ public final class ParkingQuery {
 	 */
 		
 	public static List<Lot> getLots(final String theLotName) {
-		final String sql = "SELECT * FROM ParkingLot WHERE lotName = ?";
+		final String sql = "SELECT * FROM Lot WHERE lotName = ?";
 		final String args[] = {theLotName};
 		return processRowsToLots(query(sql, args));
 	}
 	
 	public static List<Lot> getAllLots() {
-		final String sql = "SELECT * FROM ParkingLot";
+		final String sql = "SELECT * FROM Lot";
 		return processRowsToLots(query(sql));
 	}
 	
 	public static List<Space> getSpaces(Integer theSpaceNumber) {
 		final String sql = "SELECT * FROM Space WHERE spaceNumber = ?";
 		final String args[] = {theSpaceNumber.toString()};
+		return processRowsToSpaces(query(sql, args));
+	}
+	
+	public static List<Space> getSpaces(String theLotName) {
+		final String sql = "SELECT * FROM Space WHERE lotName = ?";
+		final String args[] = {theLotName};
 		return processRowsToSpaces(query(sql, args));
 	}
 		
@@ -97,6 +99,23 @@ public final class ParkingQuery {
 			stmt.setString(1, theStaff.getName());
 			stmt.setInt(2, theStaff.getPhoneExtension());
 			stmt.setString(3,  theStaff.getVehicleLicense());
+			stmt.executeQuery();
+			result = true;
+		} catch (Exception e) { System.out.println(e.getMessage()); } // exception will return false
+		return result;
+	}
+	
+	public static boolean addLot(Lot theLot) {
+		boolean result = false;
+		try {
+			String sql = "INSERT INTO Lot(lotName, location, capacity, floors) "
+					+ "VALUES (?, ?, ?, ?)";
+			
+			PreparedStatement stmt = ParkingDbConnector.getPreparedStatement(sql);
+			stmt.setString(1, theLot.getName());
+			stmt.setString(2, theLot.getLocation());
+			stmt.setInt(3,  theLot.getCapacity());
+			stmt.setInt(4,  theLot.getFloors());
 			stmt.executeQuery();
 			result = true;
 		} catch (Exception e) { System.out.println(e.getMessage()); } // exception will return false
@@ -166,42 +185,7 @@ public final class ParkingQuery {
 		return result;
 	}
 	
-	
-	// process rows to covered spaces
-	private static List<CoveredSpace> processRowsToCoveredSpaces(final ResultSet theRows) {
-		List<CoveredSpace> result = new ArrayList<CoveredSpace>();
 		
-		try {
-			while (theRows.next()) {
-				Integer spaceNumber = theRows.getInt("spaceNumber");
-				Double monthlyRate = theRows.getDouble("monthlyRate");
-				
-				result.add(new CoveredSpace(spaceNumber, monthlyRate));
-			}
-		} catch(Exception e) {
-			System.err.println(e.getMessage());
-		}
-		return result;
-	}
-		
-		
-	// process rows to uncovered spaces
-	private static List<UncoveredSpace> processRowsToUncoveredSpaces(final ResultSet theRows) {
-		List<UncoveredSpace> result = new ArrayList<UncoveredSpace>();
-		
-		try {
-			while (theRows.next()) {
-				Integer spaceNumber = theRows.getInt("spaceNumber");
-				
-				result.add(new UncoveredSpace(spaceNumber));
-			}
-		} catch(Exception e) {
-			System.err.println(e.getMessage());
-		}
-		return result;
-	}
-	
-	
 	// process rows to staff
 	private static List<Staff> processRowsToStaff(final ResultSet theRows) {
 		List<Staff> result = new ArrayList<Staff>();
@@ -221,56 +205,6 @@ public final class ParkingQuery {
 		return result;
 	}
 		
-	// process rows to StaffSpace
-	private static List<StaffSpace> processRowsToStaffSpace(final ResultSet theRows) {
-	List<StaffSpace> result = new ArrayList<StaffSpace>();
-		
-	try {
-		while (theRows.next()) {
-			Integer staffNumber = theRows.getInt("staffNumber");
-			Integer spaceNumber = theRows.getInt("spaceNumber");
-				
-			result.add(new StaffSpace(staffNumber, spaceNumber));
-		}
-	} catch(Exception e) {
-		System.err.println(e.getMessage());
-	}
-		return result;
-	}	
-		
-	// process rows to space booking
-	private static List<SpaceBooking> processRowsToSpaceBooking(final ResultSet theRows) {
-		List<SpaceBooking> result = new ArrayList<SpaceBooking>();
-			
-		try {
-			while (theRows.next()) {
-				Integer bookingNumber = theRows.getInt("bookingNumber");
-				Integer staffNumber = theRows.getInt("staffNumber");
-				Integer spaceNumber = theRows.getInt("spaceNumber");
-				String visitorLicense = theRows.getString("visitorLicense");
-				String dateOfVisit = theRows.getString("dateOfVisit");
-				
-				// convert date string to LocalDate
-				LocalDate bookingDate = getLocalDate(dateOfVisit);
-				
-				result.add(new SpaceBooking(bookingNumber, staffNumber, spaceNumber, bookingDate, visitorLicense));
-			}
-		} catch(Exception e) {
-			System.err.println(e.getMessage());
-		}
-		return result;
-	}
-		
-	/**
-	 * Converts a SQL date string to a LocalDate.
-	 * @param theDateString
-	 * @return
-	 */
-	private static LocalDate getLocalDate(final String theDateString) {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-		LocalDate result = LocalDate.parse(theDateString, formatter);
-		return result;
-	}
 	
 	/**
 	 * Converts a LocalDate to a SQL date string.

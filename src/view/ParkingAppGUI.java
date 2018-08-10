@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -20,8 +21,10 @@ import javax.swing.JTextField;
 
 import control.ParkingQuery;
 import control.SpaceAllocator;
+import model.Lot;
 import model.Space;
 import model.SpaceBooking;
+import model.SpaceType;
 import model.Staff;
 import model.StaffSpace;
 
@@ -226,22 +229,23 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	 * The booking request screen.
 	 */
 	private void showAdminAddLotScreen() {
-		JTextField staffNameField = new JTextField(20);
-		JTextField phoneExtField = new JTextField(15);
-		JTextField vehicleLicenseNumberField = new JTextField(15);
+		JTextField lotNameField = new JTextField(20);
+		JTextField lotLocationField = new JTextField(20);
+		JTextField lotCapacityField = new JTextField(15);
+		JTextField lotFloorsField = new JTextField(15);
 				
 		// set navigation button actions
 		MenuScreen screen = new MenuScreen("Add Parking Lot");
 		screen.setBackAction(e -> showAdminScreen());
 		screen.setSubmitAction(e -> {
-			final String staffName = staffNameField.getText();
-			final String vehicleLicenseNumber = vehicleLicenseNumberField.getText();
-			final Integer phoneExt = Integer.parseInt(phoneExtField.getText());
+			final String name = lotNameField.getText();
+			final String location = lotLocationField.getText();
+			final Integer capacity = Integer.parseInt(lotCapacityField.getText());
+			final Integer floors = Integer.parseInt(lotFloorsField.getText());
 			
 			// send SpaceBooking and then redirect user to welcome
-			Staff staff = new Staff(staffName, phoneExt,
-					vehicleLicenseNumber);
-			ParkingQuery.addStaff(staff);
+			Lot lot = new Lot(name, location, capacity, floors);
+			ParkingQuery.addLot(lot);
 			showAdminScreen();
 		});
 		
@@ -249,19 +253,24 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		JPanel mainPanel = new JPanel(new FlowLayout());
 		
 		JPanel empPanel = new JPanel();
-		empPanel.add(new JLabel("Staff Member Name:"));
-		empPanel.add(staffNameField);
+		empPanel.add(new JLabel("Lot Name:"));
+		empPanel.add(lotNameField);
 		mainPanel.add(empPanel);
 		
-		JPanel vehPanel = new JPanel();
-		vehPanel.add(new JLabel("Vehicle License:"));
-		vehPanel.add(vehicleLicenseNumberField);
-		mainPanel.add(vehPanel);
+		JPanel locPanel = new JPanel();
+		locPanel.add(new JLabel("Lot Location:"));
+		locPanel.add(lotLocationField);
+		mainPanel.add(locPanel);
 		
 		JPanel datePanel = new JPanel();
-		datePanel.add(new JLabel("Phone Extension:"));
-		datePanel.add(phoneExtField);
+		datePanel.add(new JLabel("Lot Capacity:"));
+		datePanel.add(lotCapacityField);
 		mainPanel.add(datePanel);
+				
+		JPanel floorsPanel = new JPanel();
+		floorsPanel.add(new JLabel("Lot Floor Count:"));
+		floorsPanel.add(lotFloorsField);
+		mainPanel.add(floorsPanel);
 				
 		screen.setMainPanel(mainPanel);
 		setDisplay(screen);
@@ -271,22 +280,46 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	 * The booking request screen.
 	 */
 	private void showAdminAddSpaceScreen() {
-		JTextField staffNameField = new JTextField(20);
-		JTextField phoneExtField = new JTextField(15);
-		JTextField vehicleLicenseNumberField = new JTextField(15);
-				
+		JComboBox<String> lotNameField; 	//user selects their name
+		JComboBox<String> spaceTypeField;   
+		JCheckBox isCoveredField = new JCheckBox();
+		JTextField rateField = new JTextField(15);
+		
+		
+		/* Initialize a list of Lot objects index aligned with lotNameField */
+		List<Lot> allLots = ParkingQuery.getAllLots();
+		
+		/* Populate lotNameField */
+		final String[] lotNames = new String[allLots.size()];
+      
+		for (int i = 0; i < allLots.size(); i++) {
+			lotNames[i] = allLots.get(i).getName();
+		}
+		lotNameField = new JComboBox<>(lotNames);
+		
+		/* Initialize a list of space types */
+		final SpaceType[] spaceTypeValues = SpaceType.values();
+		
+		/* Populate spaceTypeField */
+		String[] spaceTypes = new String[spaceTypeValues.length];
+		
+		for (int i = 0; i < spaceTypeValues.length; i++) {
+			spaceTypes[i] = spaceTypeValues[i].toString();
+		}
+		spaceTypeField = new JComboBox<>(spaceTypes);
+		
 		// set navigation button actions
 		MenuScreen screen = new MenuScreen("Add Parking Space");
 		screen.setBackAction(e -> showAdminScreen());
 		screen.setSubmitAction(e -> {
-			final String staffName = staffNameField.getText();
-			final String vehicleLicenseNumber = vehicleLicenseNumberField.getText();
-			final Integer phoneExt = Integer.parseInt(phoneExtField.getText());
-			
+			final String lotName = lotNames[lotNameField.getSelectedIndex()];
+			final SpaceType spaceType = spaceTypeValues[spaceTypeField.getSelectedIndex()];
+			final boolean isCovered = isCoveredField.isSelected();
+			final Double rate = Double.parseDouble(rateField.getText()); 
+						
 			// send SpaceBooking and then redirect user to welcome
-			Staff staff = new Staff(staffName, phoneExt,
-					vehicleLicenseNumber);
-			ParkingQuery.addStaff(staff);
+			Space space = new Space(lotName, spaceType);
+			SpaceAllocator.requestAddSpace(space, isCovered, rate);
 			showAdminScreen();
 		});
 		
@@ -294,20 +327,25 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		JPanel mainPanel = new JPanel(new FlowLayout());
 		
 		JPanel empPanel = new JPanel();
-		empPanel.add(new JLabel("Staff Member Name:"));
-		empPanel.add(staffNameField);
+		empPanel.add(new JLabel("Lot Name:"));
+		empPanel.add(lotNameField);
 		mainPanel.add(empPanel);
 		
-		JPanel vehPanel = new JPanel();
-		vehPanel.add(new JLabel("Vehicle License:"));
-		vehPanel.add(vehicleLicenseNumberField);
-		mainPanel.add(vehPanel);
+		JPanel typePanel = new JPanel();
+		typePanel.add(new JLabel("Space Type:"));
+		typePanel.add(spaceTypeField);
+		mainPanel.add(typePanel);
 		
-		JPanel datePanel = new JPanel();
-		datePanel.add(new JLabel("Phone Extension:"));
-		datePanel.add(phoneExtField);
-		mainPanel.add(datePanel);
-				
+		JPanel coveredPanel = new JPanel();
+		coveredPanel.add(new JLabel("Covered Space?"));
+		coveredPanel.add(isCoveredField);
+		mainPanel.add(coveredPanel);
+		
+		JPanel ratePanel = new JPanel();
+		ratePanel.add(new JLabel("Space Rate"));
+		ratePanel.add(rateField);
+		mainPanel.add(ratePanel);
+		
 		screen.setMainPanel(mainPanel);
 		setDisplay(screen);
 	}

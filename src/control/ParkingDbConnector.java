@@ -32,9 +32,7 @@ public final class ParkingDbConnector {
 		Statement query;
 		
 		try {
-			if (db == null || db.isClosed());
-				connect();
-			
+			connect();
 			query = db.createStatement();
 			result = query.executeQuery(theSql);
 
@@ -58,9 +56,7 @@ public final class ParkingDbConnector {
 		PreparedStatement query;
 		
 		try {
-			if (db == null || db.isClosed())
-				connect();
-			
+			connect();
 			query = db.prepareStatement(theSql);
 			
 			for (int i = 0; i < theArgs.length; i++) {
@@ -85,9 +81,7 @@ public final class ParkingDbConnector {
 		PreparedStatement result = null;
 		
 		try {
-			if (db == null || db.isClosed())
-				connect();
-			
+			connect();
 			result = db.prepareStatement(theSql);
 			
 		} catch(SQLException e) {
@@ -102,10 +96,22 @@ public final class ParkingDbConnector {
 	 * @throws SQLException
 	 */
 	private static void connect() throws SQLException {
-		String param = "jdbc:" + DB_DRIVER + "://" + DB_SERVER + "/" + DB_SCHEMA 
-				+ "?user=" + DB_USERNAME + "&password=" + DB_PASSWORD;
-		
-		db = DriverManager.getConnection(param);	
+		if (db == null || db.isClosed()) {
+			String param = "jdbc:" + DB_DRIVER + "://" + DB_SERVER + "/" + DB_SCHEMA 
+					+ "?user=" + DB_USERNAME + "&password=" + DB_PASSWORD;
+			
+			db = DriverManager.getConnection(param);
+		}
 	}
 	
+	/** 
+	 * Closes the database connection if not already closed.
+	 *  
+	 */
+	@Override
+	public void finalize() throws Throwable {
+		if (db != null && !db.isClosed())
+			db.close();
+	}
+
 }

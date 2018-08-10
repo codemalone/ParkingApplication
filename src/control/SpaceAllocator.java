@@ -4,6 +4,8 @@ import java.sql.PreparedStatement;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+
+import model.Lot;
 import model.Space;
 import model.SpaceBooking;
 import model.SpaceType;
@@ -101,50 +103,49 @@ public final class SpaceAllocator {
 	
 	
 	public static boolean requestAddSpace(final Space theRequest, final boolean isCovered, final Double theRate) {
-		boolean result = false;
-		boolean permitFlag = false;
 		
-		// if space is uncovered and type is open then add
-		if (!isCovered && theRequest.getSpaceType().equals(SpaceType.OPEN)) {
-			permitFlag = true;
-		}
+		// check lot capacity. if at capacity then abort
+		final Lot lot = ParkingQuery.getLots(theRequest.getLotName()).get(0);
+		final int spaceCount = ParkingQuery.getSpaces(lot.getName()).size();
+		if (spaceCount >= lot.getCapacity())
+			return false;
 		
-		// if space is covered and type is visitor then
+		// if space is uncovered and type is NOT open then abort
+		if (!isCovered && !theRequest.getSpaceType().equals(SpaceType.OPEN)) 
+			return false;
+				
+		// if space is covered and type is visitor then check total visitor space count
 		if (isCovered && theRequest.getSpaceType().equals(SpaceType.VISITOR)) {
 			List<Space> visitorSpaces = ParkingQuery.getAllSpacesOfType(SpaceType.VISITOR);
 			
-			if (visitorSpaces.size() < 20) {
-				permitFlag = true;
+			if (visitorSpaces.size() >= 20) {
+				return false;
 			}
 		}
 
-		// if space is covered and type is staff then add
-		if (isCovered && theRequest.getSpaceType().equals(SpaceType.STAFF)) {
-			permitFlag = true;
-		}
-		
 		// business rules above have passed so we add space
-		if (permitFlag) {
-			final String lotName = theRequest.getLotName();
-			final String spaceType = theRequest.getSpaceType().toString();
-			Integer spaceNumber = -1;
+		boolean result = false;
+		final String lotName = theRequest.getLotName();
+		final String spaceType = theRequest.getSpaceType().toString();
+		Integer spaceNumber = -1;
 			
-			// add space
+		// add space
+		try {
+			String sql = "INSERT INTO Space(spaceType, lotName) VALUES (?, ?)";
+			
+			PreparedStatement stmt = ParkingDbConnector.getPreparedStatement(sql);
+			stmt.setString(1, spaceType);
+			stmt.setString(2, lotName);
+			stmt.executeQuery();
+		
+			spaceNumber = stmt.getGeneratedKeys().getInt(0); //set new spaceNumber
+		
+		} catch (Exception e) { } // exception will return false
+			
+		// add covered or uncovered
+		if (spaceNumber > -1 && isCovered == true) {
 			try {
-				String sql = "INSERT INTO Space(spaceType, lotName) VALUES (?, ?)";
-				
-				PreparedStatement stmt = ParkingDbConnector.getPreparedStatement(sql);
-				stmt.setString(1, spaceType);
-				stmt.setString(2, lotName);
-				stmt.executeQuery();
-				
-				spaceNumber = stmt.getGeneratedKeys().getInt(0);
-			} catch (Exception e) { } // exception will return false
-			
-			// add covered or uncovered
-			if (spaceNumber > -1 && isCovered == true) {
-				try {
-					String sql = "INSERT INTO CoveredSpace(spaceNumber, lotName) VALUES (?, ?)";
+				String sql = "INSERT INTO CoveredSpace(spaceNumber, lotName) VALUES (?, ?)";
 					
 					PreparedStatement stmt = ParkingDbConnector.getPreparedStatement(sql);
 					stmt.setString(1, spaceType);
@@ -153,7 +154,7 @@ public final class SpaceAllocator {
 					result = true;
 				} catch (Exception e) { } // exception will return false
 			}
-		}
+		
 		return result;
 	}
 	
