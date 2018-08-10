@@ -28,6 +28,10 @@ public class SpaceAllocator {
 	// method to process a request for a visitor booking
 	public static SpaceBooking requestVisitorBooking(final SpaceBooking theRequest) {
 		System.out.println("Booking request");
+		System.out.println(theRequest.getSpaceNumber());
+		System.out.println(theRequest.getVisitorLicense());
+		
+		System.out.println(theRequest.getDate());
 		System.out.println(theRequest.getStaffNumber());
 		return null;
 	}

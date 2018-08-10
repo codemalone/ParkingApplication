@@ -30,20 +30,27 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	/** Main window title. */
     private static final String WINDOW_TITLE = "Parking Application";
     
-    private JPanel tablePanel;
+    private static final String[] SPACE_TABLE_COLUMN_NAMES = 
+    	{"Lot Name", "Space Number"};
     
-    private JTextField dateField;
+    private JPanel myTablePanel;
     
+    private JTable mySpaceTable;
     
+    private Object[][] mySpaceData;
+    
+    private JTextField myVisitDateField;
     
     public ParkingAppGUI() {
 		super(WINDOW_TITLE);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setResizable(false);
 		
-		tablePanel = new JPanel();
-		dateField = new JTextField(15);
-		dateField.addActionListener(this);
+		myTablePanel = new JPanel();
+		mySpaceTable = null;
+		mySpaceData = null;
+		myVisitDateField = new JTextField(15);
+		myVisitDateField.addActionListener(this);
 	}
 	
 	public void start() {
@@ -80,29 +87,44 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	 * The booking request screen.
 	 */
 	private void showBookingRequestScreen() {
-		int staffNumber = 0;
-		int spaceNumber = 0;
-		JTextField visitorLicenseLabel = new JTextField();
-		LocalDate dateOfVisit = LocalDate.now();
-				
-		// get staff list
+		JComboBox<String> staffListField; 	//user selects their name
+		JTextField visitorLicenseField; 	//user enter vehicle license number
+		
+		/* Initialize a list of Staff objects index aligned with staffListField */
 		List<Staff> allStaff = ParkingDb.getAllStaff();
-		String[] staffNames = new String[allStaff.size()];
+		
+		/* Populate staffListField */
+		final String[] staffNames = new String[allStaff.size()];
       
 		for (int i = 0; i < allStaff.size(); i++) {
 			staffNames[i] = allStaff.get(i).getName();
 		}
-		final JComboBox<String> staffList = new JComboBox<>(staffNames);
-		staffList.addActionListener(e -> {
-			//staffNumber = allStaff.get(staffList.getSelectedIndex()).getNumber();
-		});
-								
+		staffListField = new JComboBox<>(staffNames);
+		
+		visitorLicenseField = new JTextField(25);
+		
 		// set navigation button actions
 		MenuScreen screen = new MenuScreen("Visitor Booking");
 		screen.setBackAction(e -> showWelcomeScreen());
 		screen.setSubmitAction(e -> {
+			final int staffListIndex = staffListField.getSelectedIndex();
+			final Integer staffNumber = allStaff.get(staffListIndex).getNumber();
+			final String visitorLicense = visitorLicenseField.getText();
+			final LocalDate dateOfVisit = getDate(myVisitDateField.getText());
+			final Integer spaceNumber;
+			
+			// check for valid date value
+			if (dateOfVisit == null) {
+				return;
+			}
+			
+			// get lot/space from table selection
+			final int row = mySpaceTable.getSelectedRow();
+			spaceNumber = (Integer) mySpaceData[row][1];
+			
+			// send SpaceBooking and then redirect user to welcome
 			SpaceBooking booking = new SpaceBooking(staffNumber, spaceNumber,
-					dateOfVisit, visitorLicenseLabel.getText());
+					dateOfVisit, visitorLicense);
 			SpaceAllocator.requestVisitorBooking(booking);
 			showWelcomeScreen();
 		});
@@ -112,31 +134,33 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		
 		JPanel empPanel = new JPanel();
 		empPanel.add(new JLabel("Staff Member Name:"));
-		empPanel.add(staffList);
+		empPanel.add(staffListField);
 		mainPanel.add(empPanel);
 		
 		JPanel vehPanel = new JPanel();
 		vehPanel.add(new JLabel("Visitor Vehicle License:"));
-		vehPanel.add(new JTextField(15));
+		vehPanel.add(visitorLicenseField);
 		mainPanel.add(vehPanel);
 		
 		JPanel datePanel = new JPanel();
 		datePanel.add(new JLabel("Date of Visit (MM/DD/YYYY):"));
-		datePanel.add(dateField);
+		datePanel.add(myVisitDateField);
 		mainPanel.add(datePanel);
 		
 		JPanel hintPanel = new JPanel();
-		hintPanel.add(new JLabel("Enter a date and press enter to view available spaces."));
+		hintPanel.add(new JLabel("Enter a date and press enter to view available spaces. Then select a space."));
 		mainPanel.add(hintPanel);
 		
 		// table
-		tablePanel = new JPanel();
-		Object[][] data = new Object[1][2];
-		String[] columnNames = {"Lot Name", "Space Number"};
-		JTable table = new JTable(data, columnNames);
-		JScrollPane spaceTable = new JScrollPane(table);
-		tablePanel.add(spaceTable);
-		mainPanel.add(tablePanel);
+		myTablePanel = new JPanel();
+		mySpaceData = new Object[1][2];
+		 
+		mySpaceTable = new JTable(mySpaceData, SPACE_TABLE_COLUMN_NAMES);
+		JScrollPane scrollPane = new JScrollPane(mySpaceTable);
+		myTablePanel.add(scrollPane);
+		mainPanel.add(myTablePanel);
+		
+	
 		
 		screen.setMainPanel(mainPanel);
 		setDisplay(screen);
@@ -207,18 +231,16 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		
-		if (e.getSource() == dateField) {
-			LocalDate date = getDate(dateField.getText());
+		if (e.getSource() == myVisitDateField) {
+			LocalDate date = getDate(myVisitDateField.getText());
 		
 			if (date != null) {
-				tablePanel.removeAll();
-				Object[][] data = getSpaceTableData(date);
-				String[] columnNames = {"Lot Name", "Space Number"};
-				JTable table = new JTable(data, columnNames);
-				JScrollPane spaceTable = new JScrollPane(table);
-				tablePanel.add(spaceTable);
-				tablePanel.revalidate();
-				System.out.println("hit");
+				myTablePanel.removeAll();
+				mySpaceData = getSpaceTableData(date);
+				mySpaceTable = new JTable(mySpaceData, SPACE_TABLE_COLUMN_NAMES);
+				JScrollPane scrollPane = new JScrollPane(mySpaceTable);
+				myTablePanel.add(scrollPane);
+				myTablePanel.revalidate();
 				this.repaint();
 			}
 		}
