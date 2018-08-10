@@ -15,7 +15,17 @@ import model.Staff;
 import model.StaffSpace;
 import model.UncoveredSpace;
 
+/**
+ * This class provides queries that return a list of the expected object type.
+ * Methods in this class that add or edit a stored data model do not enforce
+ * business rules, but simply check for duplicate keys.
+ * @author Jared Malone
+ *
+ */
 public final class ParkingQuery {
+	
+	/** Utility class is not to be constructed. */
+	private ParkingQuery() { }
 	
 	/*
 	 * A query method contains an SQL statement that is structured to return
@@ -24,40 +34,40 @@ public final class ParkingQuery {
 	 * objects is returned to the caller.
 	 */
 		
-	public final static List<Lot> getLots(final String theLotName) {
+	public static List<Lot> getLots(final String theLotName) {
 		final String sql = "SELECT * FROM ParkingLot WHERE lotName = ?";
 		final String args[] = {theLotName};
 		return processRowsToLots(query(sql, args));
 	}
 	
-	public final static List<Lot> getAllLots() {
+	public static List<Lot> getAllLots() {
 		final String sql = "SELECT * FROM ParkingLot";
 		return processRowsToLots(query(sql));
 	}
 	
-	public final static List<Space> getSpaces(Integer theSpaceNumber) {
+	public static List<Space> getSpaces(Integer theSpaceNumber) {
 		final String sql = "SELECT * FROM Space WHERE spaceNumber = ?";
 		final String args[] = {theSpaceNumber.toString()};
 		return processRowsToSpaces(query(sql, args));
 	}
 		
-	public final static List<Space> getAllCoveredSpaces() {
+	public static List<Space> getAllCoveredSpaces() {
 		final String sql = "SELECT * FROM CoveredSpace";
 		return processRowsToSpaces(query(sql));
 	}
 	
-	public final static List<Space> getAllSpacesOfType(SpaceType theSpaceType) {
+	public static List<Space> getAllSpacesOfType(SpaceType theSpaceType) {
 		final String sql = "SELECT * FROM Space WHERE spaceType = ?";
 		final String args[] = {theSpaceType.toString()};
 		return processRowsToSpaces(query(sql, args));
 	}
 	
-	public final static List<Space> getAllAssignedSpaces() {
+	public static List<Space> getAllAssignedSpaces() {
 		final String sql = "SELECT * FROM Space NATURAL JOIN StaffSpace";
 		return processRowsToSpaces(query(sql));
 	}
 	
-	public final static List<Space> getAllBookedSpaces(LocalDate theDate) {
+	public static List<Space> getAllBookedSpaces(LocalDate theDate) {
 		final String sql = "SELECT Space.* " +
 						   	"FROM Space NATURAL JOIN SpaceBooking " +
 						   	"WHERE dateOfVisit = ?";
@@ -65,19 +75,19 @@ public final class ParkingQuery {
 		return processRowsToSpaces(query(sql, args));
 	}
 		
-	public final static List<Staff> getAllStaff() {
+	public static List<Staff> getAllStaff() {
 		final String sql = "SELECT * FROM Staff";
 		return processRowsToStaff(query(sql));
 	}
 	
-	public final static List<Staff> getAllStaffWithoutAssignedSpaces() {
+	public static List<Staff> getAllStaffWithoutAssignedSpaces() {
 		final String sql = "SELECT Staff.* FROM Staff LEFT OUTER JOIN StaffSpace "
 				+ "ON Staff.staffNumber = StaffSpace.staffNumber "
 				+ "WHERE StaffSpace.staffNumber IS NULL";
 		return processRowsToStaff(query(sql));
 	}
 	
-	public final static boolean addStaff(Staff theStaff) {
+	public static boolean addStaff(Staff theStaff) {
 		boolean result = false;
 		try {
 			String sql = "INSERT INTO Staff(staffName, telephoneExt, "
@@ -93,7 +103,7 @@ public final class ParkingQuery {
 		return result;
 	}
 	
-	public final static boolean updateStaff(Staff theStaff) {
+	public static boolean updateStaff(Staff theStaff) {
 		boolean result = false;
 		try {
 			String sql = "UPDATE Staff "
@@ -272,11 +282,13 @@ public final class ParkingQuery {
 		String result = theLocalDate.format(formatter);
 		return result;
 	}
-		
+
+	/** Forwards a call to the ParkingDbConnector class. **/
 	private static ResultSet query(final String theSql) {
 		return ParkingDbConnector.executeQuery(theSql);
 	}
 	
+	/** Forwards a call to the ParkingDbConnector class. **/
 	private static ResultSet query(final String theSql, final String[] theArgs) {
 		return ParkingDbConnector.executeQuery(theSql, theArgs);
 	}

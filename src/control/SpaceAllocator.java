@@ -9,10 +9,16 @@ import model.SpaceBooking;
 import model.SpaceType;
 import model.StaffSpace;
 
-public class SpaceAllocator {
+/**
+ * This class enforces business rules for the creation of Space,
+ * SpaceBooking, and StaffSpace assets.
+ * @author Jared Malone
+ *
+ */
+public final class SpaceAllocator {
 
-	// enforces business rules for the creation of SpaceBooking and
-	// StaffSpace assets.
+	/** Utility class is not to be constructed. */
+	private SpaceAllocator() { }
 	
 	// method returns a list of available spaces for request on a specific date
 	public static List<Space> getAvailableVisitorSpaces(LocalDate theDate) {
@@ -146,18 +152,7 @@ public class SpaceAllocator {
 					stmt.executeQuery();
 					result = true;
 				} catch (Exception e) { } // exception will return false
-				
-				
-				
-				
-				
-				
 			}
-			
-			
-			
-			
-			
 		}
 		return result;
 	}
