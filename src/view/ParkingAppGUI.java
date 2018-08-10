@@ -72,7 +72,7 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		// menu panel contents
 		JPanel panel = new JPanel();
 		
-		JPanel buttons = new JPanel(new GridLayout(2,1));
+		JPanel buttons = new JPanel(new GridLayout(0,1));
 		JButton adminButton = new JButton("Parking Administration");
 		adminButton.addActionListener(e -> showAdminScreen());
 		buttons.add(adminButton);
@@ -166,7 +166,7 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	
 	
 	/**
-	 * The booking request screen.
+	 * The assign StaffSpace screen.
 	 */
 	private void showAdminAssignStaffSpaceScreen() {
 		JComboBox<String> staffListField; 	//user selects their name
@@ -222,6 +222,203 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	}
 	
 	
+	/**
+	 * The booking request screen.
+	 */
+	private void showAdminAddLotScreen() {
+		JTextField staffNameField = new JTextField(20);
+		JTextField phoneExtField = new JTextField(15);
+		JTextField vehicleLicenseNumberField = new JTextField(15);
+				
+		// set navigation button actions
+		MenuScreen screen = new MenuScreen("Add Parking Lot");
+		screen.setBackAction(e -> showAdminScreen());
+		screen.setSubmitAction(e -> {
+			final String staffName = staffNameField.getText();
+			final String vehicleLicenseNumber = vehicleLicenseNumberField.getText();
+			final Integer phoneExt = Integer.parseInt(phoneExtField.getText());
+			
+			// send SpaceBooking and then redirect user to welcome
+			Staff staff = new Staff(staffName, phoneExt,
+					vehicleLicenseNumber);
+			ParkingQuery.addStaff(staff);
+			showAdminScreen();
+		});
+		
+		// menu panel contents
+		JPanel mainPanel = new JPanel(new FlowLayout());
+		
+		JPanel empPanel = new JPanel();
+		empPanel.add(new JLabel("Staff Member Name:"));
+		empPanel.add(staffNameField);
+		mainPanel.add(empPanel);
+		
+		JPanel vehPanel = new JPanel();
+		vehPanel.add(new JLabel("Vehicle License:"));
+		vehPanel.add(vehicleLicenseNumberField);
+		mainPanel.add(vehPanel);
+		
+		JPanel datePanel = new JPanel();
+		datePanel.add(new JLabel("Phone Extension:"));
+		datePanel.add(phoneExtField);
+		mainPanel.add(datePanel);
+				
+		screen.setMainPanel(mainPanel);
+		setDisplay(screen);
+	}
+	
+	/**
+	 * The booking request screen.
+	 */
+	private void showAdminAddSpaceScreen() {
+		JTextField staffNameField = new JTextField(20);
+		JTextField phoneExtField = new JTextField(15);
+		JTextField vehicleLicenseNumberField = new JTextField(15);
+				
+		// set navigation button actions
+		MenuScreen screen = new MenuScreen("Add Parking Space");
+		screen.setBackAction(e -> showAdminScreen());
+		screen.setSubmitAction(e -> {
+			final String staffName = staffNameField.getText();
+			final String vehicleLicenseNumber = vehicleLicenseNumberField.getText();
+			final Integer phoneExt = Integer.parseInt(phoneExtField.getText());
+			
+			// send SpaceBooking and then redirect user to welcome
+			Staff staff = new Staff(staffName, phoneExt,
+					vehicleLicenseNumber);
+			ParkingQuery.addStaff(staff);
+			showAdminScreen();
+		});
+		
+		// menu panel contents
+		JPanel mainPanel = new JPanel(new FlowLayout());
+		
+		JPanel empPanel = new JPanel();
+		empPanel.add(new JLabel("Staff Member Name:"));
+		empPanel.add(staffNameField);
+		mainPanel.add(empPanel);
+		
+		JPanel vehPanel = new JPanel();
+		vehPanel.add(new JLabel("Vehicle License:"));
+		vehPanel.add(vehicleLicenseNumberField);
+		mainPanel.add(vehPanel);
+		
+		JPanel datePanel = new JPanel();
+		datePanel.add(new JLabel("Phone Extension:"));
+		datePanel.add(phoneExtField);
+		mainPanel.add(datePanel);
+				
+		screen.setMainPanel(mainPanel);
+		setDisplay(screen);
+	}
+	
+	
+	/**
+	 * The booking request screen.
+	 */
+	private void showAdminAddStaffScreen() {
+		JTextField staffNameField = new JTextField(20);
+		JTextField phoneExtField = new JTextField(15);
+		JTextField vehicleLicenseNumberField = new JTextField(15);
+				
+		// set navigation button actions
+		MenuScreen screen = new MenuScreen("Add Staff Member");
+		screen.setBackAction(e -> showAdminScreen());
+		screen.setSubmitAction(e -> {
+			final String staffName = staffNameField.getText();
+			final String vehicleLicenseNumber = vehicleLicenseNumberField.getText();
+			final Integer phoneExt = Integer.parseInt(phoneExtField.getText());
+			
+			// send SpaceBooking and then redirect user to welcome
+			Staff staff = new Staff(staffName, phoneExt,
+					vehicleLicenseNumber);
+			ParkingQuery.addStaff(staff);
+			showAdminScreen();
+		});
+		
+		// menu panel contents
+		JPanel mainPanel = new JPanel(new FlowLayout());
+		
+		JPanel empPanel = new JPanel();
+		empPanel.add(new JLabel("Staff Member Name:"));
+		empPanel.add(staffNameField);
+		mainPanel.add(empPanel);
+		
+		JPanel vehPanel = new JPanel();
+		vehPanel.add(new JLabel("Vehicle License:"));
+		vehPanel.add(vehicleLicenseNumberField);
+		mainPanel.add(vehPanel);
+		
+		JPanel datePanel = new JPanel();
+		datePanel.add(new JLabel("Phone Extension:"));
+		datePanel.add(phoneExtField);
+		mainPanel.add(datePanel);
+				
+		screen.setMainPanel(mainPanel);
+		setDisplay(screen);
+	}
+	
+	
+	/**
+	 * The booking request screen.
+	 */
+	private void showAdminEditStaffScreen() {
+		JComboBox<String> staffListField; 	//user selects their name
+		
+		/* Initialize a list of Staff objects index aligned with staffListField */
+		List<Staff> allStaff = ParkingQuery.getAllStaff();
+		
+		/* Populate staffListField */
+		final String[] staffNames = new String[allStaff.size()];
+      
+		for (int i = 0; i < allStaff.size(); i++) {
+			staffNames[i] = allStaff.get(i).getName();
+		}
+		staffListField = new JComboBox<>(staffNames);
+		
+		JTextField phoneExtField = new JTextField(15);
+		JTextField vehicleLicenseNumberField = new JTextField(15);
+				
+		// set navigation button actions
+		MenuScreen screen = new MenuScreen("Edit Staff Member");
+		screen.setBackAction(e -> showAdminScreen());
+		screen.setSubmitAction(e -> {
+			Staff oldStaffObject = allStaff.get(staffListField.getSelectedIndex());
+			final Integer staffNumber = oldStaffObject.getNumber();
+			final String staffName =  oldStaffObject.getName();
+			
+			final String vehicleLicenseNumber = vehicleLicenseNumberField.getText();
+			final Integer phoneExt = Integer.parseInt(phoneExtField.getText());
+			
+			// send SpaceBooking and then redirect user to welcome
+			Staff staff = new Staff(staffNumber, staffName, phoneExt,
+					vehicleLicenseNumber);
+			ParkingQuery.updateStaff(staff);
+			showAdminScreen();
+		});
+		
+		// menu panel contents
+		JPanel mainPanel = new JPanel(new FlowLayout());
+		
+		JPanel empPanel = new JPanel();
+		empPanel.add(new JLabel("Staff Member Name:"));
+		empPanel.add(staffListField);
+		mainPanel.add(empPanel);
+		
+		JPanel vehPanel = new JPanel();
+		vehPanel.add(new JLabel("Vehicle License:"));
+		vehPanel.add(vehicleLicenseNumberField);
+		mainPanel.add(vehPanel);
+		
+		JPanel datePanel = new JPanel();
+		datePanel.add(new JLabel("Phone Extension:"));
+		datePanel.add(phoneExtField);
+		mainPanel.add(datePanel);
+				
+		screen.setMainPanel(mainPanel);
+		setDisplay(screen);
+	}
+	
 	
 	private void showAdminScreen() {
 		MenuScreen screen = new MenuScreen("Parking Administration");
@@ -230,11 +427,19 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		// menu panel contents
 		JPanel panel = new JPanel();
 		
-		JPanel buttons = new JPanel(new GridLayout(2,1));
+		JPanel buttons = new JPanel(new GridLayout(0,1));
 		JButton assignStaffSpaceButton = new JButton("Assign Staff Space");
 		assignStaffSpaceButton
 			.addActionListener(e -> showAdminAssignStaffSpaceScreen());
 		buttons.add(assignStaffSpaceButton);
+		
+		JButton addStaffButton = new JButton("Add Staff Member");
+		addStaffButton.addActionListener(e -> showAdminAddStaffScreen());
+		buttons.add(addStaffButton);
+		
+		JButton editStaffButton = new JButton("Edit Staff Member");
+		editStaffButton.addActionListener(e -> showAdminEditStaffScreen());
+		buttons.add(editStaffButton);
 		
 		panel.add(buttons);		
 		screen.setMainPanel(panel);

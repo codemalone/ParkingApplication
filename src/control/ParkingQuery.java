@@ -1,5 +1,6 @@
 package control;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -76,6 +77,38 @@ public final class ParkingQuery {
 		return processRowsToStaff(query(sql));
 	}
 	
+	public final static boolean addStaff(Staff theStaff) {
+		boolean result = false;
+		try {
+			String sql = "INSERT INTO Staff(staffName, telephoneExt, "
+					+ "vehicleLicenseNumber) VALUES (?, ?, ?)";
+			
+			PreparedStatement stmt = ParkingDbConnector.getPreparedStatement(sql);
+			stmt.setString(1, theStaff.getName());
+			stmt.setInt(2, theStaff.getPhoneExtension());
+			stmt.setString(3,  theStaff.getVehicleLicense());
+			stmt.executeQuery();
+			result = true;
+		} catch (Exception e) { System.out.println(e.getMessage()); } // exception will return false
+		return result;
+	}
+	
+	public final static boolean updateStaff(Staff theStaff) {
+		boolean result = false;
+		try {
+			String sql = "UPDATE Staff "
+					+ "SET telephoneExt = ?, vehicleLicenseNumber = ?"
+					+ "WHERE staffNumber = ?";
+			
+			PreparedStatement stmt = ParkingDbConnector.getPreparedStatement(sql);
+			stmt.setInt(1, theStaff.getPhoneExtension());
+			stmt.setString(2,  theStaff.getVehicleLicense());
+			stmt.setInt(3,  theStaff.getNumber());
+			stmt.executeQuery();
+			result = true;
+		} catch (Exception e) { System.out.println(e.getMessage()); } // exception will return false
+		return result;
+	}
 	
 	/*
 	 * Helper methods to process queries and package results
