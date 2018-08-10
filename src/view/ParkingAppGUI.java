@@ -433,6 +433,15 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 			.addActionListener(e -> showAdminAssignStaffSpaceScreen());
 		buttons.add(assignStaffSpaceButton);
 		
+		JButton addLotButton = new JButton("Add Lot");
+		addLotButton.addActionListener(e -> showAdminAddLotScreen());
+		buttons.add(addLotButton);
+		
+		JButton addSpaceButton = new JButton("Add Space");
+		addSpaceButton.addActionListener(e -> showAdminAddSpaceScreen());
+		buttons.add(addSpaceButton);
+		
+		
 		JButton addStaffButton = new JButton("Add Staff Member");
 		addStaffButton.addActionListener(e -> showAdminAddStaffScreen());
 		buttons.add(addStaffButton);

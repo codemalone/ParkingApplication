@@ -94,7 +94,7 @@ public class SpaceAllocator {
 	}
 	
 	
-	public static boolean requestAddSpace(final Space theRequest, final boolean isCovered, final Integer theRate) {
+	public static boolean requestAddSpace(final Space theRequest, final boolean isCovered, final Double theRate) {
 		boolean result = false;
 		boolean permitFlag = false;
 		
