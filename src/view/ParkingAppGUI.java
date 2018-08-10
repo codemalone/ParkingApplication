@@ -5,6 +5,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -16,7 +17,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 
-import control.ParkingDb;
+import control.ParkingQuery;
 import control.SpaceAllocator;
 import model.Space;
 import model.SpaceBooking;
@@ -91,7 +92,7 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		JTextField visitorLicenseField; 	//user enter vehicle license number
 		
 		/* Initialize a list of Staff objects index aligned with staffListField */
-		List<Staff> allStaff = ParkingDb.getAllStaff();
+		List<Staff> allStaff = ParkingQuery.getAllStaff();
 		
 		/* Populate staffListField */
 		final String[] staffNames = new String[allStaff.size()];
@@ -113,9 +114,11 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 			final LocalDate dateOfVisit = getDate(myVisitDateField.getText());
 			final Integer spaceNumber;
 			
-			// check for valid date value
-			if (dateOfVisit == null) {
-				return;
+			// validate input. return without doing anything if one or more
+			// fields are not valid.
+			if (dateOfVisit == null || mySpaceTable.getSelectedRow() < 0 ||
+					visitorLicense.isEmpty()) {
+				return; // clicking submit without valid date and space is ignored.
 			}
 			
 			// get lot/space from table selection
@@ -125,7 +128,7 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 			// send SpaceBooking and then redirect user to welcome
 			SpaceBooking booking = new SpaceBooking(staffNumber, spaceNumber,
 					dateOfVisit, visitorLicense);
-			SpaceAllocator.requestVisitorBooking(booking);
+			SpaceAllocator.requestAddSpaceBooking(booking);
 			showWelcomeScreen();
 		});
 		
@@ -152,16 +155,9 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		mainPanel.add(hintPanel);
 		
 		// table
-		myTablePanel = new JPanel();
-		mySpaceData = new Object[1][2];
-		 
-		mySpaceTable = new JTable(mySpaceData, SPACE_TABLE_COLUMN_NAMES);
-		JScrollPane scrollPane = new JScrollPane(mySpaceTable);
-		myTablePanel.add(scrollPane);
+		clearSpaceTable();
 		mainPanel.add(myTablePanel);
-		
-	
-		
+				
 		screen.setMainPanel(mainPanel);
 		setDisplay(screen);
 	}
@@ -183,7 +179,7 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	
 	// get all available spaces and put lotName and spaceNumber into a 2D-array
 	private Object[][] getSpaceTableData(LocalDate theDate) {
-		List<Space> spaces = SpaceAllocator.getAllAvailableSpaces(theDate);
+		List<Space> spaces = SpaceAllocator.getAvailableVisitorSpaces(theDate);
 		Object[][] result = new Object[spaces.size()][2];
 			
 		for (int i = 0; i < spaces.size(); i++) {
@@ -197,24 +193,28 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	// date format mm/dd/yyyy
 	private LocalDate getDate(String theField) {
 		LocalDate result = null;
-		int[] date = new int[3];
-					
-		int i = 0;
-		int j = 0;
-			
-		for (int k = 1; k < theField.length(); k++ ) {
-			if (theField.charAt(k) == '/') {
-				date[i++] = Integer.parseInt(theField.substring(j, k));
-				j = k + 1;
-			}
+		
+		try { 
+		
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+			result = LocalDate.parse(theField, formatter);
+		
+		} catch (Exception e) {
+			//ignoring exception and returning null
 		}
-		date[i] = Integer.parseInt(theField.substring(j));
-			
-		if (date[0] > 0 && date[1] > 0 && date[2] > 0) {
-			result = LocalDate.of(date[2], date[0], date[1]); 
-		}
+
 		return result; 
 	}
+	
+	private void clearSpaceTable() {
+		myTablePanel.removeAll();
+		
+		mySpaceData = new Object[1][2];
+		mySpaceTable = new JTable(mySpaceData, SPACE_TABLE_COLUMN_NAMES);
+		JScrollPane scrollPane = new JScrollPane(mySpaceTable);
+		myTablePanel.add(scrollPane);
+	}
+	
 	
 	/**
 	 * Helper method changes current display to a MenuScreen.
@@ -234,15 +234,19 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		if (e.getSource() == myVisitDateField) {
 			LocalDate date = getDate(myVisitDateField.getText());
 		
+			myTablePanel.removeAll();
+			
 			if (date != null) {
-				myTablePanel.removeAll();
 				mySpaceData = getSpaceTableData(date);
 				mySpaceTable = new JTable(mySpaceData, SPACE_TABLE_COLUMN_NAMES);
 				JScrollPane scrollPane = new JScrollPane(mySpaceTable);
 				myTablePanel.add(scrollPane);
-				myTablePanel.revalidate();
-				this.repaint();
+				
+			} else {
+				clearSpaceTable();
 			}
+			myTablePanel.revalidate();
+			this.repaint();
 		}
 	}
 

@@ -13,7 +13,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import control.ParkingDb;
+import control.ParkingQuery;
 import model.Staff;
 
 public class ParkingAppGUIOld extends JFrame {

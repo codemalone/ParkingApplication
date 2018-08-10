@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,9 +18,7 @@ import model.Staff;
 import model.StaffSpace;
 import model.UncoveredSpace;
 
-public final class ParkingDb {
-
-	private static Connection db; 
+public final class ParkingQuery {
 	
 	/*
 	 * A query method contains an SQL statement that is structured to return
@@ -28,33 +27,30 @@ public final class ParkingDb {
 	 * objects is returned to the caller.
 	 */
 		
-	public static List<Lot> getLots(String theLotName) {
-		String sql = "SELECT * FROM ParkingLot WHERE lotName = ?";
-		String args[] = {theLotName};
-		return processRowsToLots(executeQuery(sql, args));
+	public final static List<Lot> getLots(final String theLotName) {
+		final String sql = "SELECT * FROM ParkingLot WHERE lotName = ?";
+		final String args[] = {theLotName};
+		final ResultSet rows = ParkingDbConnector.executeQuery(sql, args); 
+		return processRowsToLots(rows);
 	}
 	
-	public static List<Lot> getAllLots() {
-		String sql = "SELECT * FROM ParkingLot";
-		return processRowsToLots(executeQuery(sql));
+	public final static List<Lot> getAllLots() {
+		final String sql = "SELECT * FROM ParkingLot";
+		final ResultSet rows = ParkingDbConnector.executeQuery(sql);
+		return processRowsToLots(rows);
 	}
 	
-//	public static List<Staff> getStaff(String theStaffName) {
-//		String sql = "SELECT * FROM Staff WHERE staffName = ?";
-//		String args[] = {theStaffName};
-//		return processRowsToStaff(executeQuery(sql, args));
-//	}
-	
-	public static List<Space> getAllSpaces() {
-		String sql = "SELECT * FROM Space";
-		return processRowsToSpaces(executeQuery(sql));
+	public final static List<Space> getAllSpaces() {
+		final String sql = "SELECT * FROM Space";
+		final ResultSet rows = ParkingDbConnector.executeQuery(sql);
+		return processRowsToSpaces(rows);
 	}
 	
-	public static List<Staff> getAllStaff() {
-		String sql = "SELECT * FROM Staff";
-		return processRowsToStaff(executeQuery(sql));
+	public final static List<Staff> getAllStaff() {
+		final String sql = "SELECT * FROM Staff";
+		final ResultSet rows = ParkingDbConnector.executeQuery(sql);
+		return processRowsToStaff(rows);
 	}
-
 	
 	/*
 	 * Helper methods to process results and return a list of objects.
@@ -196,71 +192,15 @@ public final class ParkingDb {
 		}
 		return result;
 	}
-	
-	
-	/**
-	 * Executes an SQL query on the server. 
-	 * @param theSql query
-	 * @return ResultSet results
-	 */
-	private static ResultSet executeQuery(final String theSql) {
-		ResultSet result = null;
-		Statement query;
 		
-		try {
-			if (db == null || db.isClosed());
-				createConnection();
-			
-			query = db.createStatement();
-			result = query.executeQuery(theSql);
-			db.close();
-		} catch(SQLException e) {
-			System.err.println(e.getMessage());
-		}
-		
-		return result;
-	}
-	
-	private static ResultSet executeQuery(final String theSql, final String[] theArgs) {
-		ResultSet result = null;
-		PreparedStatement query;
-		
-		try {
-			if (db == null || db.isClosed())
-				createConnection();
-			
-			query = db.prepareStatement(theSql);
-			
-			for (int i = 0; i < theArgs.length; i++) {
-				query.setString(i+1, theArgs[i]);	
-			}
-			result = query.executeQuery();
-			
-			db.close();
-		} catch(SQLException e) {
-			System.err.println(e.getMessage());
-		}
-		
-		return result;
-	}
-	
-	
-	/**
-	 * Establishes a connection to the database server.
-	 * @throws SQLException
-	 */
-	private static void createConnection() throws SQLException {
-		db = ParkingDbConnector.create();
-	}
-		
-	
 	/**
 	 * TO-DO: Converts a SQL date string to a LocalDate.
 	 * @param theDateString
 	 * @return
 	 */
 	private static LocalDate getLocalDate(final String theDateString) {
-		LocalDate result = LocalDate.now();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		LocalDate result = LocalDate.parse(theDateString, formatter);
 		
 		return result;
 	}
