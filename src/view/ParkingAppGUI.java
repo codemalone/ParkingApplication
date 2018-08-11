@@ -86,14 +86,13 @@ public final class ParkingAppGUI extends JFrame implements ActionListener {
 		pack();
         setVisible(true);
 	}
-
 	
 	/**
 	 * Creates and displays the Welcome screen. This screen is loaded at
 	 * when the application is launched.
 	 */
 	private void showWelcomeScreen() {
-		ParkingAppGUIScreen screen = new ParkingAppGUIScreen("Welcome");
+		ParkingAppGUIScreen screen = new ParkingAppGUIScreen("Main Menu");
 	
 		// menu panel contents
 		JPanel panel = new JPanel();
@@ -106,6 +105,46 @@ public final class ParkingAppGUI extends JFrame implements ActionListener {
 		JButton bookingButton = new JButton("Visitor Booking");
 		bookingButton.addActionListener(e -> showBookingRequestScreen());
 		buttons.add(bookingButton);
+		
+		panel.add(buttons);		
+		screen.setMainPanel(panel);
+		setDisplay(screen);
+	}
+	
+	/**
+	 * Creates and displays the administrative menu screen. Buttons on this
+	 * menu are related to adding lots, spaces, staff members and staff
+	 * space assignments.
+	 */
+	private void showAdminScreen() {
+		ParkingAppGUIScreen screen = new ParkingAppGUIScreen("Parking Administration");
+		screen.setBackAction(e -> showWelcomeScreen());
+		
+		// menu panel contents
+		JPanel panel = new JPanel();
+		
+		JPanel buttons = new JPanel(new GridLayout(0,1));
+		JButton assignStaffSpaceButton = new JButton("Assign Staff Space");
+		assignStaffSpaceButton
+			.addActionListener(e -> showAdminAssignStaffSpaceScreen());
+		buttons.add(assignStaffSpaceButton);
+		
+		JButton addLotButton = new JButton("Add Lot");
+		addLotButton.addActionListener(e -> showAdminAddLotScreen());
+		buttons.add(addLotButton);
+		
+		JButton addSpaceButton = new JButton("Add Space");
+		addSpaceButton.addActionListener(e -> showAdminAddSpaceScreen());
+		buttons.add(addSpaceButton);
+		
+		
+		JButton addStaffButton = new JButton("Add Staff Member");
+		addStaffButton.addActionListener(e -> showAdminAddStaffScreen());
+		buttons.add(addStaffButton);
+		
+		JButton editStaffButton = new JButton("Edit Staff Member");
+		editStaffButton.addActionListener(e -> showAdminEditStaffScreen());
+		buttons.add(editStaffButton);
 		
 		panel.add(buttons);		
 		screen.setMainPanel(panel);
@@ -188,7 +227,6 @@ public final class ParkingAppGUI extends JFrame implements ActionListener {
 		setDisplay(screen);
 	}
 	
-	
 	/**
 	 * Creates and displays the StaffSpace assignment screen. This screen allows
 	 * a user to select a staff member that is not already assigned a space,
@@ -247,7 +285,6 @@ public final class ParkingAppGUI extends JFrame implements ActionListener {
 		screen.setMainPanel(mainPanel);
 		setDisplay(screen);
 	}
-	
 	
 	/**
 	 * Creates and displays a form to add a new lot. If the submission
@@ -331,6 +368,7 @@ public final class ParkingAppGUI extends JFrame implements ActionListener {
 			spaceTypes[i] = spaceTypeValues[i].toString();
 		}
 		spaceTypeField = new JComboBox<>(spaceTypes);
+		spaceTypeField.setSelectedIndex(1);
 		
 		// set navigation button actions
 		ParkingAppGUIScreen screen = new ParkingAppGUIScreen("Add Parking Space");
@@ -380,7 +418,6 @@ public final class ParkingAppGUI extends JFrame implements ActionListener {
 		setDisplay(screen);
 	}
 	
-	
 	/**
 	 * Creates and displays a form to add a staff member. If the submission
 	 * is successful then the user returns to the previous screen,
@@ -427,7 +464,6 @@ public final class ParkingAppGUI extends JFrame implements ActionListener {
 		screen.setMainPanel(mainPanel);
 		setDisplay(screen);
 	}
-	
 	
 	/**
 	 * Creates and displays a form to edit a staff member. The user must
@@ -501,47 +537,6 @@ public final class ParkingAppGUI extends JFrame implements ActionListener {
 		screen.setMainPanel(mainPanel);
 		setDisplay(screen);
 	}
-	
-	/**
-	 * Creates and displays the administrative menu screen. Buttons on this
-	 * menu are related to adding lots, spaces, staff members and staff
-	 * space assignments.
-	 */
-	private void showAdminScreen() {
-		ParkingAppGUIScreen screen = new ParkingAppGUIScreen("Parking Administration");
-		screen.setBackAction(e -> showWelcomeScreen());
-		
-		// menu panel contents
-		JPanel panel = new JPanel();
-		
-		JPanel buttons = new JPanel(new GridLayout(0,1));
-		JButton assignStaffSpaceButton = new JButton("Assign Staff Space");
-		assignStaffSpaceButton
-			.addActionListener(e -> showAdminAssignStaffSpaceScreen());
-		buttons.add(assignStaffSpaceButton);
-		
-		JButton addLotButton = new JButton("Add Lot");
-		addLotButton.addActionListener(e -> showAdminAddLotScreen());
-		buttons.add(addLotButton);
-		
-		JButton addSpaceButton = new JButton("Add Space");
-		addSpaceButton.addActionListener(e -> showAdminAddSpaceScreen());
-		buttons.add(addSpaceButton);
-		
-		
-		JButton addStaffButton = new JButton("Add Staff Member");
-		addStaffButton.addActionListener(e -> showAdminAddStaffScreen());
-		buttons.add(addStaffButton);
-		
-		JButton editStaffButton = new JButton("Edit Staff Member");
-		editStaffButton.addActionListener(e -> showAdminEditStaffScreen());
-		buttons.add(editStaffButton);
-		
-		panel.add(buttons);		
-		screen.setMainPanel(panel);
-		setDisplay(screen);
-	}
-
 		
 	/** 
 	 * Attempt to parse a date from theField using the pattern "MM/DD/YYYY".
@@ -637,12 +632,10 @@ public final class ParkingAppGUI extends JFrame implements ActionListener {
 				mySpaceTable = new JTable(mySpaceData, COLUMNS_FOR_VISITOR_TABLE);
 				JScrollPane scrollPane = new JScrollPane(mySpaceTable);
 				myTablePanel.add(scrollPane);
-				
 			} else {
 				clearSpaceTable();
 			}
-			myTablePanel.revalidate();
-			this.repaint();
+			this.revalidate();
 		}
 	}
 

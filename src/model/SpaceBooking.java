@@ -11,7 +11,7 @@ import java.time.LocalDate;
  * @author Jared Malone
  *
  */
-public class SpaceBooking {
+public final class SpaceBooking {
 
 	// instance variables
 	private final Integer myBookingNumber;

@@ -1,5 +1,9 @@
  package control;
-
+ /*
+  * Parking Application
+  * TCSS 445 Summer 2018
+  * Jared Malone (jaredmm)
+  */
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
@@ -22,10 +26,17 @@ import model.StaffSpace;
  */
 public final class SpaceAllocator {
 
+	/** The maximum number of visitor spaces allowed for the entire company. **/
+	private final static int MAX_VISITOR_SPACES = 20;
+	
 	/** Utility class is not to be constructed. */
 	private SpaceAllocator() { }
 	
-	// method returns a list of available spaces for request on a specific date
+	/**
+	 * Returns all available visitor spaces for the given date.
+	 * @param theDate a LocalDate for the desired date.
+	 * @return a list of available spaces.
+	 */
 	public static List<Space> getAvailableVisitorSpaces(LocalDate theDate) {
 		// start with all spaces visitor spaces
 		List<Space> visitorSpaces = ParkingQuery.getAllSpacesOfType(SpaceType.VISITOR);
@@ -39,6 +50,11 @@ public final class SpaceAllocator {
 		return visitorSpaces;
 	}
 
+	/**
+	 * Returns all available spaces of type STAFF that are not already assigned
+	 * to a staff member.
+	 * @return a list of available spaces.
+	 */
 	public static List<Space> getAvailableStaffSpaces() {
 		// start with all visitor spaces
 		List<Space> staffSpaces = ParkingQuery.getAllSpacesOfType(SpaceType.STAFF);
@@ -52,7 +68,14 @@ public final class SpaceAllocator {
 		return staffSpaces;
 	}
 		
-	// method to process a StaffSpace request
+	/**
+	 * Accepts a StaffSpace representation of data that should be entered into
+	 * the system. The values in the StaffSpace are checked against the business
+	 * rules, and if allowed then the request is added. If an error occurs then
+	 * a message is displayed to the user, and the method returns false.
+	 * @param theRequest
+	 * @return true if the StaffSpace is permanently added to the system.
+	 */
 	public static boolean requestAddStaffSpace(final StaffSpace theRequest) {
 		boolean result = false;
 		final Integer spaceNumber = theRequest.getSpaceNumber();
@@ -71,7 +94,7 @@ public final class SpaceAllocator {
 				PreparedStatement stmt = ParkingDbConnector.getPreparedStatement(sql);
 				stmt.setInt(1, staffNumber);
 				stmt.setInt(2, spaceNumber);
-				stmt.executeQuery();
+				stmt.executeUpdate();
 				result = true;
 			} catch (Exception e) {
 				System.err.println(e.getMessage()); 
@@ -80,7 +103,14 @@ public final class SpaceAllocator {
 		return result;
 	}
 
-	// method to process a request for a visitor booking
+	/**
+	 * Accepts a visitor SpaceBooking representation of data that should be entered
+	 * into the system. The values in the SpaceBooking are checked against the business
+	 * rules, and if allowed then the request is added. If an error occurs then
+	 * a message is displayed to the user, and the method returns false.
+	 * @param theRequest
+	 * @return true if the SpaceBooking is permanently added to the system.
+	 */
 	public static boolean requestAddSpaceBooking(final SpaceBooking theRequest) {
 		boolean result = false;
 		final Integer spaceNumber = theRequest.getSpaceNumber();
@@ -97,13 +127,20 @@ public final class SpaceAllocator {
 			stmt.setInt(2, staffNumber);
 			stmt.setString(3, visitorLicense);
 			stmt.setString(4, dateOfVisit);
-			stmt.executeQuery();
+			stmt.executeUpdate();
 			result = true;
 		} catch (Exception e) { } // exception will return false
 		return result; 
 	}
 	
-	
+	/**
+	 * Accepts a Space representation of data that should be entered into the system.
+	 * The values in the Space are checked against the business rules, and if
+	 * allowed then the request is added. If an error occurs then a message is
+	 * displayed to the user, and the method returns false.
+	 * @param theRequest
+	 * @return true if the Space is permanently added to the system.
+	 */
 	public static boolean requestAddSpace(final Space theRequest, final boolean isCovered, final Double theRate) {
 		final String lotName;
 		final String spaceType;
@@ -112,25 +149,32 @@ public final class SpaceAllocator {
 		
 		try {
 				
-			// check lot capacity. if at capacity then abort
+			// if lot is at capacity then abort
 			final Lot lot = ParkingQuery.getLots(theRequest.getLotName()).get(0);
 			final int spaceCount = ParkingQuery.getSpaces(lot.getName()).size();
-			if (spaceCount >= lot.getCapacity())
+			if (spaceCount >= lot.getCapacity()) {
 				throw new Exception("Lot is at capacity.");
+			}
 			
-			// if space is uncovered and type is NOT open then abort
-			if (!isCovered && !theRequest.getSpaceType().equals(SpaceType.OPEN)) 
-				throw new Exception("Uncovered spaces must be OPEN");
-					
-			// if space is covered and type is visitor then check total visitor space count
-			if (isCovered && theRequest.getSpaceType().equals(SpaceType.VISITOR)) {
+			// if space type is visitor then check total visitor space count
+			if (theRequest.getSpaceType().equals(SpaceType.VISITOR)) {
 				List<Space> visitorSpaces = ParkingQuery.getAllSpacesOfType(SpaceType.VISITOR);
-				
-				if (visitorSpaces.size() >= 20) {
+							
+				if (visitorSpaces.size() >= MAX_VISITOR_SPACES) {
 					throw new Exception("Number of visitor spaces is at the maximum.");
 				}
 			}
-	
+			
+			// if space is covered and type is OPEN then abort
+			if (isCovered && theRequest.getSpaceType().equals(SpaceType.OPEN)) {
+				throw new Exception("Covered spaces cannot be OPEN");
+			}
+			
+			// if space is uncovered and type is NOT OPEN then abort
+			if (!isCovered && !theRequest.getSpaceType().equals(SpaceType.OPEN)) 
+				throw new Exception("Uncovered spaces must be OPEN");
+			
+
 			// business rules above have passed so we add space
 			lotName = theRequest.getLotName();
 			spaceType = theRequest.getSpaceType().toString();
@@ -141,11 +185,11 @@ public final class SpaceAllocator {
 			PreparedStatement stmt = ParkingDbConnector.getPreparedStatement(sql);
 			stmt.setString(1, spaceType);
 			stmt.setString(2, lotName);
-			stmt.executeQuery();
+			stmt.executeUpdate();
 		
 			ResultSet keys = stmt.getGeneratedKeys();
 			if (keys.next()) 
-				spaceNumber = keys.getInt("spaceNumber");
+				spaceNumber = keys.getInt(1);
 			
 		} catch (Exception e) { 
 			JOptionPane.showMessageDialog(null, e.getMessage(), "Submission Failed", JOptionPane.ERROR_MESSAGE);
@@ -159,7 +203,7 @@ public final class SpaceAllocator {
 					PreparedStatement stmt = ParkingDbConnector.getPreparedStatement(sql);
 					stmt.setInt(1, spaceNumber);
 					stmt.setDouble(2, theRate);
-					stmt.executeQuery();
+					stmt.executeUpdate();
 					result = true;
 				} catch (Exception e) { System.err.println(e.getMessage()); } // exception will return false
 		} else if (spaceNumber > -1 && isCovered == false) {
@@ -168,15 +212,14 @@ public final class SpaceAllocator {
 					
 					PreparedStatement stmt = ParkingDbConnector.getPreparedStatement(sql);
 					stmt.setInt(1, spaceNumber);
-					stmt.executeQuery();
+					stmt.executeUpdate();
 					result = true;
 				} catch (Exception e) { System.err.println(e.getMessage()); } // exception will return false
 		}
 		
 		return result;
 	}
-	
-	
+		
 	/**
 	 * Converts a LocalDate to a SQL date string.
 	 * @param theLocalDate

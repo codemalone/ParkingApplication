@@ -1,5 +1,9 @@
 package control;
-
+/*
+ * Parking Application
+ * TCSS 445 Summer 2018
+ * Jared Malone (jaredmm)
+ */
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -7,14 +11,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+/**
+ * This class provides a database connection for members of the control package.
+ * @author Jared Malone
+ *
+ */
 public final class ParkingDbConnector {
 
 	/* Database server credentials */
 	private final static String DB_SERVER = "192.168.2.4:3306";
 	private final static String DB_USERNAME = "jared";
 	private final static String DB_PASSWORD = "css445";
-	private final static String DB_SCHEMA = "ParkingDB";
-	private final static String DB_DRIVER = "mariadb";
+	private final static String DB_SCHEMA = "parking"; //as specified in parking.sql
+	private final static String DB_DRIVER = "mysql";
 	
 	/** an instance of the database connection. **/
 	private static Connection db; 

@@ -10,7 +10,7 @@ package model;
 * @author Jared Malone
 *
 */
-public class Space {
+public final class Space {
 	
 	// Instance variables
 	private final Integer myNumber;

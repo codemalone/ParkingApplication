@@ -1,22 +1,21 @@
 package control;
-
+/*
+ * Parking Application
+ * TCSS 445 Summer 2018
+ * Jared Malone (jaredmm)
+ */
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-
-import model.CoveredSpace;
-import model.Lot;
-import model.Space;
-import model.SpaceType;
-import model.Staff;
+import model.*;
 
 /**
  * This class provides queries that return a list of the expected object type.
  * Methods in this class that add or edit a stored data model do not enforce
- * business rules, but simply check for duplicate keys.
+ * business rules, but simply check for duplicate entries by key value.
  * @author Jared Malone
  *
  */
@@ -102,7 +101,7 @@ public final class ParkingQuery {
 			stmt.setString(1, theStaff.getName());
 			stmt.setInt(2, theStaff.getPhoneExtension());
 			stmt.setString(3,  theStaff.getVehicleLicense());
-			stmt.executeQuery();
+			stmt.executeUpdate();
 			result = true;
 		} catch (Exception e) { System.err.println(e.getMessage()); } // exception will return false
 		return result;
@@ -119,7 +118,7 @@ public final class ParkingQuery {
 			stmt.setString(2, theLot.getLocation());
 			stmt.setInt(3,  theLot.getCapacity());
 			stmt.setInt(4,  theLot.getFloors());
-			stmt.executeQuery();
+			stmt.executeUpdate();
 			result = true;
 		} catch (Exception e) { System.err.println(e.getMessage()); } // exception will return false
 		return result;
@@ -136,7 +135,7 @@ public final class ParkingQuery {
 			stmt.setInt(1, theStaff.getPhoneExtension());
 			stmt.setString(2,  theStaff.getVehicleLicense());
 			stmt.setInt(3,  theStaff.getNumber());
-			stmt.executeQuery();
+			stmt.executeUpdate();
 			result = true;
 		} catch (Exception e) { System.err.println(e.getMessage()); } // exception will return false
 		return result;
@@ -168,9 +167,12 @@ public final class ParkingQuery {
 		}
 		return result;
 	}
-	
-	
-	// process rows to spaces
+		
+	/**
+	 * Processes rows and returns a list of Space objects. 
+	 * @param theRows a ResultSet containing Space data.
+	 * @return a List<Space> of objects.
+	 */
 	private static List<Space> processRowsToSpaces(final ResultSet theRows) {
 		List<Space> result = new ArrayList<Space>();
 		
@@ -188,8 +190,11 @@ public final class ParkingQuery {
 		return result;
 	}
 	
-
-	// process rows to covered spaces
+	/**
+	 * Processes rows and returns a list of CoveredSpace objects. 
+	 * @param theRows a ResultSet containing CoveredSpace data.
+	 * @return a List<CoveredSpace> of objects.
+	 */
 	private static List<CoveredSpace> processRowsToCoveredSpaces(final ResultSet theRows) {
 		List<CoveredSpace> result = new ArrayList<CoveredSpace>();
 		
@@ -206,8 +211,11 @@ public final class ParkingQuery {
 		return result;
 	}
 	
-	
-	// process rows to staff
+	/**
+	 * Processes rows and returns a list of Staff objects. 
+	 * @param theRows a ResultSet containing Staff data.
+	 * @return a List<Staff> of objects.
+	 */
 	private static List<Staff> processRowsToStaff(final ResultSet theRows) {
 		List<Staff> result = new ArrayList<Staff>();
 		
@@ -225,7 +233,6 @@ public final class ParkingQuery {
 		}
 		return result;
 	}
-		
 	
 	/**
 	 * Converts a LocalDate to a SQL date string.

@@ -10,7 +10,7 @@ package model;
  * @author Jared Malone
  *
  */
-public class StaffSpace {
+public final class StaffSpace {
 
 	// instance variables
 	private final Integer myStaffNumber;

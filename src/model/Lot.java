@@ -10,7 +10,7 @@ package model;
 * @author Jared Malone
 *
 */
-public class Lot {
+public final class Lot {
 	
 	// Instance variables
 	private final String myName;

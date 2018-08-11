@@ -6,11 +6,13 @@ package view;
  */
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
 
 /**
  * This class is a screen template for the ParkingAppGUI. A screen
@@ -28,7 +30,7 @@ public class ParkingAppGUIScreen extends JPanel {
     private static final int PANEL_WIDTH = 500;
     
     /** Default drawing panel preferred height. */
-    private static final int PANEL_HEIGHT = 500;
+    private static final int PANEL_HEIGHT = 550;
 	
     private final JLabel myTitleMessage;
     
@@ -43,6 +45,7 @@ public class ParkingAppGUIScreen extends JPanel {
     public ParkingAppGUIScreen(String theTitle) {
     	super();
     	myTitleMessage = new JLabel(theTitle);
+    	myTitleMessage.setFont(new Font("Sans", Font.PLAIN, 20));
     	myBackButton = new JButton("Go Back");
     	mySubmitButton = new JButton("Submit");
     	configurePanel();
@@ -80,6 +83,7 @@ public class ParkingAppGUIScreen extends JPanel {
     private void configurePanel() {
     	final Dimension dim = new Dimension(PANEL_WIDTH, PANEL_HEIGHT);
         this.setPreferredSize(dim);
+        this.setBorder(new EmptyBorder(10, 10, 10, 10));
     	this.setLayout(new BorderLayout());
 
     	// hide buttons by default
@@ -89,6 +93,7 @@ public class ParkingAppGUIScreen extends JPanel {
     	// top menu bar
     	JPanel topPane = new JPanel(new GridLayout(1,2));
     	topPane.add(myTitleMessage);
+    	
     	
     	JPanel buttonPane = new JPanel();
     	buttonPane.add(myBackButton);

@@ -10,7 +10,7 @@ package model;
 * @author Jared Malone
 *
 */
-public class CoveredSpace {
+public final class CoveredSpace {
 
 	private final Integer mySpaceNumber;
 	private final Double myRate;
