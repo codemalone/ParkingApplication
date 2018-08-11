@@ -12,12 +12,12 @@ import javax.swing.UnsupportedLookAndFeelException;
 /**
  * Parking Application for TCSS 445 Summer 2018. 
  * 
- * TO RUN THIS DEMONSTRATION...
+ * TO RUN THIS PROGRAM...
  * 
- * please enter database credentials in Control.ParkingDbConnector class file.
+ * enter database server credentials in Control.ParkingDbConnector.
  * 
  * @author Jared Malone (jaredmm@uw.edu)
- * @version 1.0 2018/08/08
+ * @version 1.0 2018/08/10
  */
 public final class ParkingApplication {
 	/** Private constructor to prevent instantiation of this class. **/

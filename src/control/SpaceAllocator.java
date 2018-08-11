@@ -1,6 +1,7 @@
  package control;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -138,22 +139,33 @@ public final class SpaceAllocator {
 			stmt.setString(2, lotName);
 			stmt.executeQuery();
 		
-			spaceNumber = stmt.getGeneratedKeys().getInt(0); //set new spaceNumber
-		
-		} catch (Exception e) { } // exception will return false
+			ResultSet keys = stmt.getGeneratedKeys();
+			if (keys.next()) 
+				spaceNumber = keys.getInt("spaceNumber");
+			
+		} catch (Exception e) { System.err.println(e.getMessage()); } // exception will return false
 			
 		// add covered or uncovered
 		if (spaceNumber > -1 && isCovered == true) {
 			try {
-				String sql = "INSERT INTO CoveredSpace(spaceNumber, lotName) VALUES (?, ?)";
+				String sql = "INSERT INTO CoveredSpace(spaceNumber, monthlyRate) VALUES (?, ?)";
 					
 					PreparedStatement stmt = ParkingDbConnector.getPreparedStatement(sql);
-					stmt.setString(1, spaceType);
-					stmt.setString(2, lotName);
+					stmt.setInt(1, spaceNumber);
+					stmt.setDouble(2, theRate);
 					stmt.executeQuery();
 					result = true;
-				} catch (Exception e) { } // exception will return false
-			}
+				} catch (Exception e) { System.out.println(e.getMessage()); } // exception will return false
+		} else if (spaceNumber > -1 && isCovered == false) {
+			try {
+				String sql = "INSERT INTO UncoveredSpace(spaceNumber) VALUES (?)";
+					
+					PreparedStatement stmt = ParkingDbConnector.getPreparedStatement(sql);
+					stmt.setInt(1, spaceNumber);
+					stmt.executeQuery();
+					result = true;
+				} catch (Exception e) { System.out.println(e.getMessage()); } // exception will return false
+		}
 		
 		return result;
 	}

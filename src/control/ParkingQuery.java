@@ -6,6 +6,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+
+import model.CoveredSpace;
 import model.Lot;
 import model.Space;
 import model.SpaceType;
@@ -53,9 +55,10 @@ public final class ParkingQuery {
 		return processRowsToSpaces(query(sql, args));
 	}
 		
-	public static List<Space> getAllCoveredSpaces() {
-		final String sql = "SELECT * FROM CoveredSpace";
-		return processRowsToSpaces(query(sql));
+	public static List<CoveredSpace> getCoveredSpaces(Integer theSpaceNumber) {
+		final String sql = "SELECT * FROM CoveredSpace WHERE spaceNumber = ?";
+		final String args[] = {theSpaceNumber.toString()};
+		return processRowsToCoveredSpaces(query(sql, args));
 	}
 	
 	public static List<Space> getAllSpacesOfType(SpaceType theSpaceType) {
@@ -185,7 +188,25 @@ public final class ParkingQuery {
 		return result;
 	}
 	
+
+	// process rows to covered spaces
+	private static List<CoveredSpace> processRowsToCoveredSpaces(final ResultSet theRows) {
+		List<CoveredSpace> result = new ArrayList<CoveredSpace>();
 		
+		try {
+			while (theRows.next()) {
+				Integer spaceNumber = theRows.getInt("spaceNumber");
+				Double monthlyRate = theRows.getDouble("monthlyRate");
+				
+				result.add(new CoveredSpace(spaceNumber, monthlyRate));
+			}
+		} catch(Exception e) {
+			System.err.println(e.getMessage());
+		}
+		return result;
+	}
+	
+	
 	// process rows to staff
 	private static List<Staff> processRowsToStaff(final ResultSet theRows) {
 		List<Staff> result = new ArrayList<Staff>();

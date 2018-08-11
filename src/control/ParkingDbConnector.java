@@ -82,8 +82,8 @@ public final class ParkingDbConnector {
 		
 		try {
 			connect();
-			result = db.prepareStatement(theSql);
-			
+			result = db.prepareStatement(theSql, Statement.RETURN_GENERATED_KEYS);
+			result.closeOnCompletion();
 		} catch(SQLException e) {
 			System.err.println(e.getMessage());
 		}

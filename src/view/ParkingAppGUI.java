@@ -8,7 +8,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -18,7 +17,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-
 import control.ParkingQuery;
 import control.SpaceAllocator;
 import model.Lot;
@@ -36,9 +34,12 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	/** Main window title. */
     private static final String WINDOW_TITLE = "Parking Application";
     
-    private static final String[] SPACE_TABLE_COLUMN_NAMES = 
+    private static final String[] COLUMNS_FOR_VISITOR_TABLE = 
     	{"Lot Name", "Space Number"};
     
+    private static final String[] COLUMNS_FOR_STAFF_TABLE = 
+    	{"Lot Name", "Space Number", "Rate"};
+        
     private JPanel myTablePanel;
     
     private JTable mySpaceTable;
@@ -70,7 +71,7 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	 * Creates and displays a panel for the welcome screen.
 	 */
 	private void showWelcomeScreen() {
-		MenuScreen screen = new MenuScreen("Welcome");
+		ParkingAppGUIScreen screen = new ParkingAppGUIScreen("Welcome");
 	
 		// menu panel contents
 		JPanel panel = new JPanel();
@@ -110,7 +111,7 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		visitorLicenseField = new JTextField(15);
 		
 		// set navigation button actions
-		MenuScreen screen = new MenuScreen("Visitor Booking");
+		ParkingAppGUIScreen screen = new ParkingAppGUIScreen("Visitor Booking");
 		screen.setBackAction(e -> showWelcomeScreen());
 		screen.setSubmitAction(e -> {
 			final int staffListIndex = staffListField.getSelectedIndex();
@@ -186,7 +187,7 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		staffListField = new JComboBox<>(staffNames);
 		
 		// set navigation button actions
-		MenuScreen screen = new MenuScreen("StaffSpace Assignment");
+		ParkingAppGUIScreen screen = new ParkingAppGUIScreen("StaffSpace Assignment");
 		screen.setBackAction(e -> showAdminScreen());
 		screen.setSubmitAction(e -> {
 			final int staffListIndex = staffListField.getSelectedIndex();
@@ -196,7 +197,7 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 			// get lot/space from table selection
 			final int row = mySpaceTable.getSelectedRow();
 			spaceNumber = (Integer) mySpaceData[row][1];
-			
+						
 			// send SpaceBooking and then redirect user to admin screen
 			StaffSpace assignment = new StaffSpace(staffNumber, spaceNumber);
 			SpaceAllocator.requestAddStaffSpace(assignment);
@@ -214,8 +215,8 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		// table
 		myTablePanel.removeAll();
 		List<Space> spaces = SpaceAllocator.getAvailableStaffSpaces();
-		setSpaceData(spaces);
-		mySpaceTable = new JTable(mySpaceData, SPACE_TABLE_COLUMN_NAMES);
+		setTableForStaff(spaces);
+		mySpaceTable = new JTable(mySpaceData, COLUMNS_FOR_STAFF_TABLE);
 		JScrollPane scrollPane = new JScrollPane(mySpaceTable);
 		myTablePanel.add(scrollPane);
 			
@@ -235,7 +236,7 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		JTextField lotFloorsField = new JTextField(15);
 				
 		// set navigation button actions
-		MenuScreen screen = new MenuScreen("Add Parking Lot");
+		ParkingAppGUIScreen screen = new ParkingAppGUIScreen("Add Parking Lot");
 		screen.setBackAction(e -> showAdminScreen());
 		screen.setSubmitAction(e -> {
 			final String name = lotNameField.getText();
@@ -309,13 +310,19 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		spaceTypeField = new JComboBox<>(spaceTypes);
 		
 		// set navigation button actions
-		MenuScreen screen = new MenuScreen("Add Parking Space");
+		ParkingAppGUIScreen screen = new ParkingAppGUIScreen("Add Parking Space");
 		screen.setBackAction(e -> showAdminScreen());
 		screen.setSubmitAction(e -> {
 			final String lotName = lotNames[lotNameField.getSelectedIndex()];
 			final SpaceType spaceType = spaceTypeValues[spaceTypeField.getSelectedIndex()];
 			final boolean isCovered = isCoveredField.isSelected();
-			final Double rate = Double.parseDouble(rateField.getText()); 
+			final Double rate;
+			
+			if (rateField.getText().isEmpty()) {
+				rate = 0.0; 
+			} else {
+				rate = Double.parseDouble(rateField.getText());
+			}
 						
 			// send SpaceBooking and then redirect user to welcome
 			Space space = new Space(lotName, spaceType);
@@ -360,7 +367,7 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		JTextField vehicleLicenseNumberField = new JTextField(15);
 				
 		// set navigation button actions
-		MenuScreen screen = new MenuScreen("Add Staff Member");
+		ParkingAppGUIScreen screen = new ParkingAppGUIScreen("Add Staff Member");
 		screen.setBackAction(e -> showAdminScreen());
 		screen.setSubmitAction(e -> {
 			final String staffName = staffNameField.getText();
@@ -418,7 +425,7 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		JTextField vehicleLicenseNumberField = new JTextField(15);
 				
 		// set navigation button actions
-		MenuScreen screen = new MenuScreen("Edit Staff Member");
+		ParkingAppGUIScreen screen = new ParkingAppGUIScreen("Edit Staff Member");
 		screen.setBackAction(e -> showAdminScreen());
 		screen.setSubmitAction(e -> {
 			Staff oldStaffObject = allStaff.get(staffListField.getSelectedIndex());
@@ -459,7 +466,7 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	
 	
 	private void showAdminScreen() {
-		MenuScreen screen = new MenuScreen("Parking Administration");
+		ParkingAppGUIScreen screen = new ParkingAppGUIScreen("Parking Administration");
 		screen.setBackAction(e -> showWelcomeScreen());
 		
 		// menu panel contents
@@ -510,9 +517,9 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 
 		return result; 
 	}
-	
+
 	// get all available spaces and put lotName and spaceNumber into a 2D-array
-	private void setSpaceData(final List<Space> theList) {
+	private void setTableForVisitor(final List<Space> theList) {
 		mySpaceData = new Object[theList.size()][2];
 			
 		for (int i = 0; i < theList.size(); i++) {
@@ -520,12 +527,30 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 			mySpaceData[i][1] = theList.get(i).getNumber();
 		}
 	}
+
+	
+	// get all available spaces and put lotName and spaceNumber into a 2D-array
+	private void setTableForStaff(final List<Space> theList) {
+		mySpaceData = new Object[theList.size()][3];
+		
+		for (int i = 0; i < theList.size(); i++) {
+			// get rate
+			final Integer spaceNumber = theList.get(i).getNumber();
+			System.out.println(spaceNumber);
+			final Double spaceRate = ParkingQuery
+					.getCoveredSpaces(spaceNumber).get(0).getRate();
+			
+			mySpaceData[i][0] = theList.get(i).getLotName();
+			mySpaceData[i][1] = spaceNumber;
+			mySpaceData[i][2] = spaceRate;
+		}
+	}
 	
 	private void clearSpaceTable() {
 		myTablePanel.removeAll();
-		setSpaceData(new ArrayList<Space>());
+		setTableForVisitor(new ArrayList<Space>());
 		
-		mySpaceTable = new JTable(mySpaceData, SPACE_TABLE_COLUMN_NAMES);
+		mySpaceTable = new JTable(mySpaceData, COLUMNS_FOR_VISITOR_TABLE);
 		JScrollPane scrollPane = new JScrollPane(mySpaceTable);
 		myTablePanel.add(scrollPane);
 	}
@@ -535,7 +560,7 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	 * Helper method changes current display to a MenuScreen.
 	 * @param theScreen the menu to display.
 	 */
-	private void setDisplay(MenuScreen theScreen) {
+	private void setDisplay(ParkingAppGUIScreen theScreen) {
 		this.setContentPane(theScreen);
 		this.revalidate();
 	}
@@ -553,8 +578,8 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 			
 			if (date != null) {
 				List<Space> spaces = SpaceAllocator.getAvailableVisitorSpaces(date);
-				setSpaceData(spaces);
-				mySpaceTable = new JTable(mySpaceData, SPACE_TABLE_COLUMN_NAMES);
+				setTableForVisitor(spaces);
+				mySpaceTable = new JTable(mySpaceData, COLUMNS_FOR_VISITOR_TABLE);
 				JScrollPane scrollPane = new JScrollPane(mySpaceTable);
 				myTablePanel.add(scrollPane);
 				

@@ -8,7 +8,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-public class MenuScreen extends JPanel {
+public class ParkingAppGUIScreen extends JPanel {
 	/** Serial ID */
 	private static final long serialVersionUID = -5233417283757311797L;
 
@@ -24,7 +24,7 @@ public class MenuScreen extends JPanel {
     
     private final JButton mySubmitButton;
     
-    public MenuScreen(String theTitle) {
+    public ParkingAppGUIScreen(String theTitle) {
     	super();
     	myTitleMessage = new JLabel(theTitle);
     	myBackButton = new JButton("Go Back");
