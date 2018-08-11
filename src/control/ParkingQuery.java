@@ -10,6 +10,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JOptionPane;
+
 import model.*;
 
 /**
@@ -103,7 +106,9 @@ public final class ParkingQuery {
 			stmt.setString(3,  theStaff.getVehicleLicense());
 			stmt.executeUpdate();
 			result = true;
-		} catch (Exception e) { System.err.println(e.getMessage()); } // exception will return false
+		} catch (Exception e) { 
+			displayError(e.getMessage());
+		} 
 		return result;
 	}
 	
@@ -120,7 +125,9 @@ public final class ParkingQuery {
 			stmt.setInt(4,  theLot.getFloors());
 			stmt.executeUpdate();
 			result = true;
-		} catch (Exception e) { System.err.println(e.getMessage()); } // exception will return false
+		} catch (Exception e) { 
+			displayError(e.getMessage());
+		}
 		return result;
 	}
 	
@@ -137,7 +144,9 @@ public final class ParkingQuery {
 			stmt.setInt(3,  theStaff.getNumber());
 			stmt.executeUpdate();
 			result = true;
-		} catch (Exception e) { System.err.println(e.getMessage()); } // exception will return false
+		} catch (Exception e) { 
+			displayError(e.getMessage());
+		}
 		return result;
 	}
 	
@@ -245,6 +254,13 @@ public final class ParkingQuery {
 		return result;
 	}
 
+	/**
+	 * Creates a user dialog with an error message if a request fails.
+	 */
+	private static void displayError(String theMsg) {
+		JOptionPane.showMessageDialog(null, theMsg, "Submission Failed", JOptionPane.ERROR_MESSAGE);
+	}
+		
 	/** Forwards a call to the ParkingDbConnector class. **/
 	private static ResultSet query(final String theSql) {
 		return ParkingDbConnector.executeQuery(theSql);

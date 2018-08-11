@@ -303,8 +303,20 @@ public final class ParkingAppGUI extends JFrame implements ActionListener {
 		screen.setSubmitAction(e -> {
 			final String name = lotNameField.getText();
 			final String location = lotLocationField.getText();
-			final Integer capacity = Integer.parseInt(lotCapacityField.getText());
-			final Integer floors = Integer.parseInt(lotFloorsField.getText());
+			final Integer capacity;
+			final Integer floors;
+			
+			if (lotCapacityField.getText().isEmpty()) {
+				capacity = null;
+			} else {
+				capacity = Integer.parseInt(lotCapacityField.getText());
+			}
+			
+			if (lotFloorsField.getText().isEmpty()) {
+				floors = null;
+			} else {
+				floors = Integer.parseInt(lotFloorsField.getText());
+			}
 			
 			Lot lot = new Lot(name, location, capacity, floors);
 			boolean success = ParkingQuery.addLot(lot);
@@ -434,7 +446,13 @@ public final class ParkingAppGUI extends JFrame implements ActionListener {
 		screen.setSubmitAction(e -> {
 			final String staffName = staffNameField.getText();
 			final String vehicleLicenseNumber = vehicleLicenseNumberField.getText();
-			final Integer phoneExt = Integer.parseInt(phoneExtField.getText());
+			final Integer phoneExt;
+			
+			if (phoneExtField.getText().isEmpty()) {
+				phoneExt = null;
+			} else {
+				phoneExt = Integer.parseInt(phoneExtField.getText());
+			}
 			
 			Staff staff = new Staff(staffName, phoneExt,
 					vehicleLicenseNumber);

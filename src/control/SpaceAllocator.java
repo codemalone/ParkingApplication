@@ -97,8 +97,8 @@ public final class SpaceAllocator {
 				stmt.executeUpdate();
 				result = true;
 			} catch (Exception e) {
-				System.err.println(e.getMessage()); 
-			} // exception will return false
+				displayError(e.getMessage());
+			} 
 		}
 		return result;
 	}
@@ -129,7 +129,9 @@ public final class SpaceAllocator {
 			stmt.setString(4, dateOfVisit);
 			stmt.executeUpdate();
 			result = true;
-		} catch (Exception e) { } // exception will return false
+		} catch (Exception e) {
+			displayError(e.getMessage());
+		} 
 		return result; 
 	}
 	
@@ -192,7 +194,7 @@ public final class SpaceAllocator {
 				spaceNumber = keys.getInt(1);
 			
 		} catch (Exception e) { 
-			JOptionPane.showMessageDialog(null, e.getMessage(), "Submission Failed", JOptionPane.ERROR_MESSAGE);
+			displayError(e.getMessage());
 		}
 			
 		// add covered or uncovered
@@ -205,7 +207,9 @@ public final class SpaceAllocator {
 					stmt.setDouble(2, theRate);
 					stmt.executeUpdate();
 					result = true;
-				} catch (Exception e) { System.err.println(e.getMessage()); } // exception will return false
+				} catch (Exception e) { 
+					displayError(e.getMessage());
+				} 
 		} else if (spaceNumber > -1 && isCovered == false) {
 			try {
 				String sql = "INSERT INTO UncoveredSpace(spaceNumber) VALUES (?)";
@@ -214,7 +218,9 @@ public final class SpaceAllocator {
 					stmt.setInt(1, spaceNumber);
 					stmt.executeUpdate();
 					result = true;
-				} catch (Exception e) { System.err.println(e.getMessage()); } // exception will return false
+				} catch (Exception e) { 
+					displayError(e.getMessage());
+				} 
 		}
 		
 		return result;
@@ -229,6 +235,13 @@ public final class SpaceAllocator {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 		String result = theLocalDate.format(formatter);
 		return result;
+	}
+	
+	/**
+	 * Creates a user dialog with an error message if a request fails.
+	 */
+	private static void displayError(String theMsg) {
+		JOptionPane.showMessageDialog(null, theMsg, "Submission Failed", JOptionPane.ERROR_MESSAGE);
 	}
 	
 }
