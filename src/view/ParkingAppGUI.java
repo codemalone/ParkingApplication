@@ -4,10 +4,12 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -409,7 +411,9 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	 */
 	private void showAdminEditStaffScreen() {
 		JComboBox<String> staffListField; 	//user selects their name
-		
+		JTextField phoneExtField = new JTextField(15);
+		JTextField vehicleLicenseNumberField = new JTextField(15);
+				
 		/* Initialize a list of Staff objects index aligned with staffListField */
 		List<Staff> allStaff = ParkingQuery.getAllStaff();
 		
@@ -419,10 +423,18 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		for (int i = 0; i < allStaff.size(); i++) {
 			staffNames[i] = allStaff.get(i).getName();
 		}
-		staffListField = new JComboBox<>(staffNames);
 		
-		JTextField phoneExtField = new JTextField(15);
-		JTextField vehicleLicenseNumberField = new JTextField(15);
+		staffListField = new JComboBox<>(staffNames);
+		staffListField.addActionListener(e -> {
+			Staff staff = allStaff.get(staffListField.getSelectedIndex());
+			vehicleLicenseNumberField.setText(staff.getVehicleLicense());
+			phoneExtField.setText(staff.getPhoneExtension().toString());
+		});
+		
+		//set fields to initial values
+		Staff selected = allStaff.get(staffListField.getSelectedIndex());
+		vehicleLicenseNumberField.setText(selected.getVehicleLicense());
+		phoneExtField.setText(selected.getPhoneExtension().toString());
 				
 		// set navigation button actions
 		ParkingAppGUIScreen screen = new ParkingAppGUIScreen("Edit Staff Member");
@@ -533,18 +545,21 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	private void setTableForStaff(final List<Space> theList) {
 		mySpaceData = new Object[theList.size()][3];
 		
+		NumberFormat currencyFormatter = 
+	        NumberFormat.getCurrencyInstance(Locale.getDefault());
+		
 		for (int i = 0; i < theList.size(); i++) {
 			// get rate
 			final Integer spaceNumber = theList.get(i).getNumber();
-			System.out.println(spaceNumber);
 			final Double spaceRate = ParkingQuery
 					.getCoveredSpaces(spaceNumber).get(0).getRate();
 			
 			mySpaceData[i][0] = theList.get(i).getLotName();
 			mySpaceData[i][1] = spaceNumber;
-			mySpaceData[i][2] = spaceRate;
+			mySpaceData[i][2] = currencyFormatter.format(spaceRate);
 		}
 	}
+	
 	
 	private void clearSpaceTable() {
 		myTablePanel.removeAll();

@@ -73,7 +73,6 @@ public final class SpaceAllocator {
 				result = true;
 			} catch (Exception e) {
 				System.err.println(e.getMessage()); 
-				System.out.println(spaceNumber + ", " + staffNumber);
 			} // exception will return false
 		}
 		return result;
@@ -155,7 +154,7 @@ public final class SpaceAllocator {
 					stmt.setDouble(2, theRate);
 					stmt.executeQuery();
 					result = true;
-				} catch (Exception e) { System.out.println(e.getMessage()); } // exception will return false
+				} catch (Exception e) { System.err.println(e.getMessage()); } // exception will return false
 		} else if (spaceNumber > -1 && isCovered == false) {
 			try {
 				String sql = "INSERT INTO UncoveredSpace(spaceNumber) VALUES (?)";
@@ -164,7 +163,7 @@ public final class SpaceAllocator {
 					stmt.setInt(1, spaceNumber);
 					stmt.executeQuery();
 					result = true;
-				} catch (Exception e) { System.out.println(e.getMessage()); } // exception will return false
+				} catch (Exception e) { System.err.println(e.getMessage()); } // exception will return false
 		}
 		
 		return result;

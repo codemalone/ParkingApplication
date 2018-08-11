@@ -104,7 +104,7 @@ public final class ParkingQuery {
 			stmt.setString(3,  theStaff.getVehicleLicense());
 			stmt.executeQuery();
 			result = true;
-		} catch (Exception e) { System.out.println(e.getMessage()); } // exception will return false
+		} catch (Exception e) { System.err.println(e.getMessage()); } // exception will return false
 		return result;
 	}
 	
@@ -121,7 +121,7 @@ public final class ParkingQuery {
 			stmt.setInt(4,  theLot.getFloors());
 			stmt.executeQuery();
 			result = true;
-		} catch (Exception e) { System.out.println(e.getMessage()); } // exception will return false
+		} catch (Exception e) { System.err.println(e.getMessage()); } // exception will return false
 		return result;
 	}
 	
@@ -138,7 +138,7 @@ public final class ParkingQuery {
 			stmt.setInt(3,  theStaff.getNumber());
 			stmt.executeQuery();
 			result = true;
-		} catch (Exception e) { System.out.println(e.getMessage()); } // exception will return false
+		} catch (Exception e) { System.err.println(e.getMessage()); } // exception will return false
 		return result;
 	}
 	
