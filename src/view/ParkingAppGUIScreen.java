@@ -1,5 +1,9 @@
 package view;
-
+/*
+ * Parking Application
+ * TCSS 445 Summer 2018
+ * Jared Malone (jaredmm)
+ */
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -8,6 +12,14 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+/**
+ * This class is a screen template for the ParkingAppGUI. A screen
+ * has a main content panel, a title in the top left corner, and
+ * optional navigation buttons in the top right corner. The
+ * navigation buttons are activated by setting an ActionListener.
+ * @author Jared Malone
+ *
+ */
 public class ParkingAppGUIScreen extends JPanel {
 	/** Serial ID */
 	private static final long serialVersionUID = -5233417283757311797L;
@@ -24,6 +36,10 @@ public class ParkingAppGUIScreen extends JPanel {
     
     private final JButton mySubmitButton;
     
+    /**
+     * Constructs a new GUIScreen.
+     * @param theTitle
+     */
     public ParkingAppGUIScreen(String theTitle) {
     	super();
     	myTitleMessage = new JLabel(theTitle);
@@ -32,23 +48,35 @@ public class ParkingAppGUIScreen extends JPanel {
     	configurePanel();
     }
     
+    /**
+     * Sets an action for the "Back" button and makes the button visible.
+     * @param theActionListener
+     */
     public void setBackAction(ActionListener theActionListener) {
     	myBackButton.addActionListener(theActionListener);
     	myBackButton.setVisible(true);
     }
     
+    /**
+     * Sets an action for the "Submit" button and makes the button visible.
+     * @param theActionListener
+     */
     public void setSubmitAction(ActionListener theActionListener) {
     	mySubmitButton.addActionListener(theActionListener);
     	mySubmitButton.setVisible(true);
     }
     
+    /**
+     * Sets the main panel of this GUIScreen.
+     * @param thePanel
+     */
     public void setMainPanel(JPanel thePanel) {
     	this.add(thePanel, BorderLayout.CENTER);
     }
     
-    // configure a screen template with a top left titleMessage,
-    // top right command buttons, and a south main panel with
-    // a grid layout?
+    /**
+     * Configures a new GUIScreen instance.
+     */
     private void configurePanel() {
     	final Dimension dim = new Dimension(PANEL_WIDTH, PANEL_HEIGHT);
         this.setPreferredSize(dim);

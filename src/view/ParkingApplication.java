@@ -1,10 +1,9 @@
+package view;
 /*
  * Parking Application
  * TCSS 445 Summer 2018
  * Jared Malone (jaredmm)
  */
-package view;
-
 import java.awt.EventQueue;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -12,14 +11,15 @@ import javax.swing.UnsupportedLookAndFeelException;
 /**
  * Parking Application for TCSS 445 Summer 2018. 
  * 
- * TO RUN THIS PROGRAM...
+ * BEFORE RUNNING THIS PROGRAM...
  * 
  * enter database server credentials in Control.ParkingDbConnector.
  * 
  * @author Jared Malone (jaredmm@uw.edu)
- * @version 1.0 2018/08/10
+ * @version 1.0.2 2018/08/10
  */
 public final class ParkingApplication {
+	
 	/** Private constructor to prevent instantiation of this class. **/
 	private ParkingApplication() {
 		throw new IllegalStateException();

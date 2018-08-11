@@ -1,5 +1,9 @@
 package view;
-
+/*
+ * Parking Application
+ * TCSS 445 Summer 2018
+ * Jared Malone (jaredmm)
+ */
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -21,14 +25,17 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import control.ParkingQuery;
 import control.SpaceAllocator;
-import model.Lot;
-import model.Space;
-import model.SpaceBooking;
-import model.SpaceType;
-import model.Staff;
-import model.StaffSpace;
+import model.*;
 
-public class ParkingAppGUI extends JFrame implements ActionListener {
+/**
+ * This view class generates the user experience for the Parking Application.
+ * A main menu is provided, and Staff Members may go directly to the "Visitor
+ * Booking" screen. A separate menu allows the user to perform administrative
+ * tasks.
+ * @author Jared Malone
+ *
+ */
+public final class ParkingAppGUI extends JFrame implements ActionListener {
 	
 	/** A generated serial version UID for object Serialization. */
 	private static final long serialVersionUID = 6222370433764293653L;
@@ -36,20 +43,29 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	/** Main window title. */
     private static final String WINDOW_TITLE = "Parking Application";
     
+    /** Columns used for Visitor Booking screen. **/
     private static final String[] COLUMNS_FOR_VISITOR_TABLE = 
     	{"Lot Name", "Space Number"};
     
+    /** Columns used for StaffSpace Assignment screen. **/
     private static final String[] COLUMNS_FOR_STAFF_TABLE = 
     	{"Lot Name", "Space Number", "Rate"};
         
+    /** The table panel may be used by any screen in their main content area. **/
     private JPanel myTablePanel;
     
+    /** A JTable container is the only component in myTablePanel. **/
     private JTable mySpaceTable;
     
+    /** A 2D array containing the data for mySpaceTable. **/
     private Object[][] mySpaceData;
     
+    /** The date field for the visitor booking screen. **/
     private JTextField myVisitDateField;
     
+    /**
+     * Constructor creates an instance of this application. 
+     */
     public ParkingAppGUI() {
 		super(WINDOW_TITLE);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -62,6 +78,9 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		myVisitDateField.addActionListener(this);
 	}
 	
+    /**
+     * Called at runtime to initialize the screen.
+     */
 	public void start() {
 		showWelcomeScreen();
 		pack();
@@ -70,7 +89,8 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 
 	
 	/**
-	 * Creates and displays a panel for the welcome screen.
+	 * Creates and displays the Welcome screen. This screen is loaded at
+	 * when the application is launched.
 	 */
 	private void showWelcomeScreen() {
 		ParkingAppGUIScreen screen = new ParkingAppGUIScreen("Welcome");
@@ -93,24 +113,23 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	}
 	
 	/**
-	 * The booking request screen.
+	 * Creates and displays the Visitor Booking screen. This screen allows
+	 * a staff member to submit a requested booking. If the submission is
+	 * successful then the user will return to the welcome screen, otherwise
+	 * an error will be displayed.
 	 */
 	private void showBookingRequestScreen() {
-		JComboBox<String> staffListField; 	//user selects their name
-		JTextField visitorLicenseField; 	//user enter vehicle license number
+		JTextField visitorLicenseField = new JTextField(15);
+		JComboBox<String> staffListField; 	
 		
 		/* Initialize a list of Staff objects index aligned with staffListField */
 		List<Staff> allStaff = ParkingQuery.getAllStaff();
-		
-		/* Populate staffListField */
 		final String[] staffNames = new String[allStaff.size()];
       
 		for (int i = 0; i < allStaff.size(); i++) {
 			staffNames[i] = allStaff.get(i).getName();
 		}
 		staffListField = new JComboBox<>(staffNames);
-		
-		visitorLicenseField = new JTextField(15);
 		
 		// set navigation button actions
 		ParkingAppGUIScreen screen = new ParkingAppGUIScreen("Visitor Booking");
@@ -133,11 +152,11 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 			final int row = mySpaceTable.getSelectedRow();
 			spaceNumber = (Integer) mySpaceData[row][1];
 			
-			// send SpaceBooking and then redirect user to welcome
 			SpaceBooking booking = new SpaceBooking(staffNumber, spaceNumber,
 					dateOfVisit, visitorLicense);
-			SpaceAllocator.requestAddSpaceBooking(booking);
-			showWelcomeScreen();
+			boolean success = SpaceAllocator.requestAddSpaceBooking(booking);
+			if (success)
+				showWelcomeScreen();
 		});
 		
 		// menu panel contents
@@ -162,7 +181,6 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		hintPanel.add(new JLabel("Enter a date and press enter to view available spaces. Then select a space."));
 		mainPanel.add(hintPanel);
 		
-		// table
 		clearSpaceTable();
 		mainPanel.add(myTablePanel);
 				
@@ -172,7 +190,10 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	
 	
 	/**
-	 * The assign StaffSpace screen.
+	 * Creates and displays the StaffSpace assignment screen. This screen allows
+	 * a user to select a staff member that is not already assigned a space,
+	 * and submit an assignment request. If the submission is successful then the
+	 * user will return to the previous screen, otherwise an error will be displayed.
 	 */
 	private void showAdminAssignStaffSpaceScreen() {
 		JComboBox<String> staffListField; 	//user selects their name
@@ -200,10 +221,10 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 			final int row = mySpaceTable.getSelectedRow();
 			spaceNumber = (Integer) mySpaceData[row][1];
 						
-			// send SpaceBooking and then redirect user to admin screen
 			StaffSpace assignment = new StaffSpace(staffNumber, spaceNumber);
-			SpaceAllocator.requestAddStaffSpace(assignment);
-			showAdminScreen();
+			boolean success = SpaceAllocator.requestAddStaffSpace(assignment);
+			if (success)
+				showAdminScreen();
 		});
 		
 		// menu panel contents
@@ -229,7 +250,9 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	
 	
 	/**
-	 * The booking request screen.
+	 * Creates and displays a form to add a new lot. If the submission
+	 * is successful then the user returns to the previous screen,
+	 * otherwise an error will be displayed.
 	 */
 	private void showAdminAddLotScreen() {
 		JTextField lotNameField = new JTextField(20);
@@ -246,10 +269,10 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 			final Integer capacity = Integer.parseInt(lotCapacityField.getText());
 			final Integer floors = Integer.parseInt(lotFloorsField.getText());
 			
-			// send SpaceBooking and then redirect user to welcome
 			Lot lot = new Lot(name, location, capacity, floors);
-			ParkingQuery.addLot(lot);
-			showAdminScreen();
+			boolean success = ParkingQuery.addLot(lot);
+			if (success)
+				showAdminScreen();
 		});
 		
 		// menu panel contents
@@ -280,19 +303,19 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	}
 	
 	/**
-	 * The booking request screen.
+	 * Creates and displays a form to add a new space. If the submission
+	 * is successful then the user returns to the previous screen,
+	 * otherwise an error will be displayed.
 	 */
 	private void showAdminAddSpaceScreen() {
-		JComboBox<String> lotNameField; 	//user selects their name
+		JComboBox<String> lotNameField; 	
 		JComboBox<String> spaceTypeField;   
 		JCheckBox isCoveredField = new JCheckBox();
+		isCoveredField.setSelected(true);
 		JTextField rateField = new JTextField(15);
-		
-		
+				
 		/* Initialize a list of Lot objects index aligned with lotNameField */
 		List<Lot> allLots = ParkingQuery.getAllLots();
-		
-		/* Populate lotNameField */
 		final String[] lotNames = new String[allLots.size()];
       
 		for (int i = 0; i < allLots.size(); i++) {
@@ -302,8 +325,6 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		
 		/* Initialize a list of space types */
 		final SpaceType[] spaceTypeValues = SpaceType.values();
-		
-		/* Populate spaceTypeField */
 		String[] spaceTypes = new String[spaceTypeValues.length];
 		
 		for (int i = 0; i < spaceTypeValues.length; i++) {
@@ -326,10 +347,10 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 				rate = Double.parseDouble(rateField.getText());
 			}
 						
-			// send SpaceBooking and then redirect user to welcome
 			Space space = new Space(lotName, spaceType);
-			SpaceAllocator.requestAddSpace(space, isCovered, rate);
-			showAdminScreen();
+			boolean success = SpaceAllocator.requestAddSpace(space, isCovered, rate);
+			if (success)
+				showAdminScreen();
 		});
 		
 		// menu panel contents
@@ -361,7 +382,9 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	
 	
 	/**
-	 * The booking request screen.
+	 * Creates and displays a form to add a staff member. If the submission
+	 * is successful then the user returns to the previous screen,
+	 * otherwise an error will be displayed.
 	 */
 	private void showAdminAddStaffScreen() {
 		JTextField staffNameField = new JTextField(20);
@@ -376,11 +399,11 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 			final String vehicleLicenseNumber = vehicleLicenseNumberField.getText();
 			final Integer phoneExt = Integer.parseInt(phoneExtField.getText());
 			
-			// send SpaceBooking and then redirect user to welcome
 			Staff staff = new Staff(staffName, phoneExt,
 					vehicleLicenseNumber);
-			ParkingQuery.addStaff(staff);
-			showAdminScreen();
+			boolean success = ParkingQuery.addStaff(staff);
+			if (success)
+				showAdminScreen();
 		});
 		
 		// menu panel contents
@@ -407,17 +430,20 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	
 	
 	/**
-	 * The booking request screen.
+	 * Creates and displays a form to edit a staff member. The user must
+	 * select from the list of existing staff members. If a different
+	 * staff member is selected then the fields are updated with the
+	 * selected person's details. If a submission is successful then
+	 * the user is returned to the previous screen, otherwise an error
+	 * message is displayed.
 	 */
 	private void showAdminEditStaffScreen() {
-		JComboBox<String> staffListField; 	//user selects their name
+		JComboBox<String> staffListField; 	
 		JTextField phoneExtField = new JTextField(15);
 		JTextField vehicleLicenseNumberField = new JTextField(15);
 				
 		/* Initialize a list of Staff objects index aligned with staffListField */
 		List<Staff> allStaff = ParkingQuery.getAllStaff();
-		
-		/* Populate staffListField */
 		final String[] staffNames = new String[allStaff.size()];
       
 		for (int i = 0; i < allStaff.size(); i++) {
@@ -447,11 +473,11 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 			final String vehicleLicenseNumber = vehicleLicenseNumberField.getText();
 			final Integer phoneExt = Integer.parseInt(phoneExtField.getText());
 			
-			// send SpaceBooking and then redirect user to welcome
 			Staff staff = new Staff(staffNumber, staffName, phoneExt,
 					vehicleLicenseNumber);
-			ParkingQuery.updateStaff(staff);
-			showAdminScreen();
+			boolean success = ParkingQuery.updateStaff(staff);
+			if (success)
+				showAdminScreen();
 		});
 		
 		// menu panel contents
@@ -476,7 +502,11 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		setDisplay(screen);
 	}
 	
-	
+	/**
+	 * Creates and displays the administrative menu screen. Buttons on this
+	 * menu are related to adding lots, spaces, staff members and staff
+	 * space assignments.
+	 */
 	private void showAdminScreen() {
 		ParkingAppGUIScreen screen = new ParkingAppGUIScreen("Parking Administration");
 		screen.setBackAction(e -> showWelcomeScreen());
@@ -513,8 +543,11 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	}
 
 		
-	// attempt to parse a date from theField otherwise return null
-	// date format mm/dd/yyyy
+	/** 
+	 * Attempt to parse a date from theField using the pattern "MM/DD/YYYY".
+	 * @param theField String of user input
+	 * @return LocalDate containing the date or null
+	 */
 	private LocalDate getDate(String theField) {
 		LocalDate result = null;
 		
@@ -530,7 +563,10 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		return result; 
 	}
 
-	// get all available spaces and put lotName and spaceNumber into a 2D-array
+	/**
+	 * Place data values into the spaceTable using the Visitor Booking layout.
+	 * @param theList of spaces to include in the table.
+	 */
 	private void setTableForVisitor(final List<Space> theList) {
 		mySpaceData = new Object[theList.size()][2];
 			
@@ -540,8 +576,10 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		}
 	}
 
-	
-	// get all available spaces and put lotName and spaceNumber into a 2D-array
+	/**
+	 * Place data values into the spaceTable using the StaffSpace Assignment layout.
+	 * @param theList of spaces to include in the table.
+	 */
 	private void setTableForStaff(final List<Space> theList) {
 		mySpaceData = new Object[theList.size()][3];
 		
@@ -560,7 +598,10 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		}
 	}
 	
-	
+	/**
+	 * Creates an empty table for the Visitor Booking layout. Used to show an
+	 * empty table when the user has not entered a valid date.
+	 */
 	private void clearSpaceTable() {
 		myTablePanel.removeAll();
 		setTableForVisitor(new ArrayList<Space>());
@@ -569,8 +610,7 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 		JScrollPane scrollPane = new JScrollPane(mySpaceTable);
 		myTablePanel.add(scrollPane);
 	}
-	
-	
+		
 	/**
 	 * Helper method changes current display to a MenuScreen.
 	 * @param theScreen the menu to display.
@@ -581,7 +621,7 @@ public class ParkingAppGUI extends JFrame implements ActionListener {
 	}
 
 	/**
-	 * Event listeners
+	 * Event listener is used when the visitor booking date field is changed.
 	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {

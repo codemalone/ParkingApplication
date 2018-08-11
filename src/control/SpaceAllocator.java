@@ -6,6 +6,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import model.Lot;
 import model.Space;
 import model.SpaceBooking;
@@ -103,34 +105,37 @@ public final class SpaceAllocator {
 	
 	
 	public static boolean requestAddSpace(final Space theRequest, final boolean isCovered, final Double theRate) {
-		
-		// check lot capacity. if at capacity then abort
-		final Lot lot = ParkingQuery.getLots(theRequest.getLotName()).get(0);
-		final int spaceCount = ParkingQuery.getSpaces(lot.getName()).size();
-		if (spaceCount >= lot.getCapacity())
-			return false;
-		
-		// if space is uncovered and type is NOT open then abort
-		if (!isCovered && !theRequest.getSpaceType().equals(SpaceType.OPEN)) 
-			return false;
-				
-		// if space is covered and type is visitor then check total visitor space count
-		if (isCovered && theRequest.getSpaceType().equals(SpaceType.VISITOR)) {
-			List<Space> visitorSpaces = ParkingQuery.getAllSpacesOfType(SpaceType.VISITOR);
-			
-			if (visitorSpaces.size() >= 20) {
-				return false;
-			}
-		}
-
-		// business rules above have passed so we add space
-		boolean result = false;
-		final String lotName = theRequest.getLotName();
-		final String spaceType = theRequest.getSpaceType().toString();
+		final String lotName;
+		final String spaceType;
 		Integer spaceNumber = -1;
-			
-		// add space
+		boolean result = false;
+		
 		try {
+				
+			// check lot capacity. if at capacity then abort
+			final Lot lot = ParkingQuery.getLots(theRequest.getLotName()).get(0);
+			final int spaceCount = ParkingQuery.getSpaces(lot.getName()).size();
+			if (spaceCount >= lot.getCapacity())
+				throw new Exception("Lot is at capacity.");
+			
+			// if space is uncovered and type is NOT open then abort
+			if (!isCovered && !theRequest.getSpaceType().equals(SpaceType.OPEN)) 
+				throw new Exception("Uncovered spaces must be OPEN");
+					
+			// if space is covered and type is visitor then check total visitor space count
+			if (isCovered && theRequest.getSpaceType().equals(SpaceType.VISITOR)) {
+				List<Space> visitorSpaces = ParkingQuery.getAllSpacesOfType(SpaceType.VISITOR);
+				
+				if (visitorSpaces.size() >= 20) {
+					throw new Exception("Number of visitor spaces is at the maximum.");
+				}
+			}
+	
+			// business rules above have passed so we add space
+			lotName = theRequest.getLotName();
+			spaceType = theRequest.getSpaceType().toString();
+			spaceNumber = -1;
+			
 			String sql = "INSERT INTO Space(spaceType, lotName) VALUES (?, ?)";
 			
 			PreparedStatement stmt = ParkingDbConnector.getPreparedStatement(sql);
@@ -142,7 +147,9 @@ public final class SpaceAllocator {
 			if (keys.next()) 
 				spaceNumber = keys.getInt("spaceNumber");
 			
-		} catch (Exception e) { System.err.println(e.getMessage()); } // exception will return false
+		} catch (Exception e) { 
+			JOptionPane.showMessageDialog(null, e.getMessage(), "Submission Failed", JOptionPane.ERROR_MESSAGE);
+		}
 			
 		// add covered or uncovered
 		if (spaceNumber > -1 && isCovered == true) {
